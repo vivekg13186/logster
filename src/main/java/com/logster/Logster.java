@@ -1,6 +1,7 @@
 package com.logster;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -43,7 +44,11 @@ public class Logster extends JFrame {
         super("Logster");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1000, 700);
-
+        try {
+            setIconImage(ImageIO.read(Objects.requireNonNull(Logster.class.getResource("../../logo1.png"))));
+        } catch (IOException _) {
+             ;
+        }
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
         searchLabel = new JLabel("File->Open Folder");
@@ -112,6 +117,7 @@ public class Logster extends JFrame {
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             protected Void doInBackground() {
                 try {
+
                     indexer = new FileIndexer(indexDir);
                     indexer.indexFolder(folder);
                     indexer.close();
@@ -160,6 +166,7 @@ public class Logster extends JFrame {
         FlatIntelliJLaf.setup();
         File ttfFile = new File(Objects.requireNonNull(Logster.class.getResource("../../fonts/Inter-Regular.ttf")).getFile()); // path to your Inter TTF
         Font interFont = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(ttfFile)).deriveFont(12f);
+
 
         UIManager.getLookAndFeelDefaults().put("defaultFont", interFont);
         SwingUtilities.invokeLater(() -> new Logster().setVisible(true));

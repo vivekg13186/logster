@@ -24,6 +24,8 @@ class FileIndexer {private final Pattern timePattern = Pattern.compile("\\d{4}-\
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     public FileIndexer(String indexDir) throws IOException {
+        Util.deleteDirectory(new File(indexDir));
+
         Directory dir = FSDirectory.open(Paths.get(indexDir));
         IndexWriterConfig config = new IndexWriterConfig(new StandardAnalyzer());
         writer = new IndexWriter(dir, config);

@@ -2,6 +2,7 @@ package com.logster;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
+import java.io.File;
 
 public class Util {
 
@@ -17,5 +18,14 @@ public class Util {
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
+    }
+    static void deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        directoryToBeDeleted.delete();
     }
 }
