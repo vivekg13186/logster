@@ -1,4 +1,4 @@
-# Logster
+# ![logo](./wiki/images/logo.PNG =100x) Logster
 
 A desktop GUI application for searching and browsing log files.
 
@@ -18,6 +18,7 @@ multiple files while supporting timestamp-based searches.
 -   Copy log content with ease
 -   Toggle log levels for better filtering
 
+
 ## Usage
 
 -   **Index a folder**: Go to `File → Index Folder` and select the
@@ -28,6 +29,10 @@ multiple files while supporting timestamp-based searches.
     file extensions and date formats
 -   **Toggle log levels**: Quickly switch between different log levels
     for focused analysis
+
+## System Requirements
+
+- **Java Development Kit (JDK) 24** or later
 
 ## Download
 
