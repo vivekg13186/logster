@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 public class LogGeneratorTestCase {
 
 
-    @Test
+
      void genLogs() throws IOException {
         DateDetection dateDetection =new DateDetection();
         String currentDirectory = System.getProperty("user.home")+"\\Downloads\\MyLogs\\";

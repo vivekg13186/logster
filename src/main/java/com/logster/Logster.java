@@ -54,16 +54,24 @@ public class Logster extends JFrame {
     private void  showSettingsDialog(){
         settingsDialog.setVisible(true);
     }
+    public   void loadIcon(){
+
+        try (InputStream is = Logster.class.getClassLoader().getResourceAsStream("icons/logo.png")) {
+            if (is == null) {
+                throw new IllegalStateException("Font not found!");
+            }
+
+            setIconImage(ImageIO.read(is));
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
+    }
     public Logster() throws IOException {
         super("Logster");
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1000, 700);
-        try {
-            setIconImage(ImageIO.read(Objects.requireNonNull(Logster.class.getResource("../../logo.png"))));
-        } catch (IOException e) {
-             LOGGER.error(e);
-        }
+        loadIcon();
 
          JPanel searchRow = Util.rows(searchBox,searchBtn,new JLabel("Use range"),useDate,fromDateField,toDateField);
         JPanel topPanel = Util.columns(searchLabel,searchRow);
@@ -181,16 +189,25 @@ public class Logster extends JFrame {
        new FileContentViewer(viewerTabs,new File(r.filePath),r.lineNumber);
     }
 
-    public static void main(String[] args) throws IOException, FontFormatException {
+    public static void loadFont(){
+        try (InputStream is = Logster.class.getClassLoader().getResourceAsStream("fonts/Inter-Regular.ttf")) {
+            if (is == null) {
+                throw new IllegalStateException("Font not found!");
+            }
+            Font inter = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(12f);
+            UIManager.put("defaultFont", inter);
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
+    }
+    public static void main(String[] args)  {
 
         Configurator.setLevel("com.logster",Level.ERROR);
         System.setProperty("flatlaf.useWindowDecorations","false");
         FlatIntelliJLaf.setup();
-        File ttfFile = new File(Objects.requireNonNull(Logster.class.getResource("../../fonts/Inter-Regular.ttf")).getFile()); // path to your Inter TTF
-        Font interFont = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(ttfFile)).deriveFont(12f);
 
+        loadFont();
 
-        UIManager.getLookAndFeelDefaults().put("defaultFont", interFont);
         SwingUtilities.invokeLater(() -> {
             try {
                 new Logster().setVisible(true);

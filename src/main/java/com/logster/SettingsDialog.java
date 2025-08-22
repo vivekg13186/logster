@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 import java.util.prefs.Preferences;
 
@@ -21,11 +22,7 @@ public class SettingsDialog extends JDialog {
 
     public SettingsDialog() throws IOException {
 
-        try {
-            setIconImage(ImageIO.read(Objects.requireNonNull(Logster.class.getResource("../../logo.png"))));
-        } catch (IOException e) {
-            LOGGER.error(e);
-        }
+        loadIcon();
 
         String default_date_formats  = Util.readResource("date-formats.csv");
         String extensions = prefs.get(KEY_EXTENSION,".log,.txt");
@@ -55,6 +52,18 @@ public class SettingsDialog extends JDialog {
         setSize(400,400);
     }
 
+    public   void loadIcon(){
+
+        try (InputStream is = Logster.class.getClassLoader().getResourceAsStream("icons/logo.png")) {
+            if (is == null) {
+                throw new IllegalStateException("Font not found!");
+            }
+
+            setIconImage(ImageIO.read(is));
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
+    }
     private static JComboBox<String> getStringJComboBox() {
         String[] choices = { "ERROR","INFO", "ALL"};
 
