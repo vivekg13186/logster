@@ -1,4 +1,4 @@
-# ![logo](./wiki/images/logo.PNG) Logster
+# ![logo](./wiki/images/logo.png) Logster
 
 A desktop GUI application for searching and browsing log files.
 
