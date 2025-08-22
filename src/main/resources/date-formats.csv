@@ -1,0 +1,8 @@
+19,yyyy-MM-dd HH:mm:ss
+23,yyyy-MM-dd HH:mm:ss,SSS
+19,dd-MM-yyyy HH:mm:ss
+19,dd/MM/yyyy HH:mm:ss
+20,dd-MMM-yyyy HH:mm:ss
+21,MMM dd, yyyy HH:mm:ss
+24,EEE MMM dd HH:mm:ss yyyy
+19,yyyy-MM-dd'T'HH:mm:ss

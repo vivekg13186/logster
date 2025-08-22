@@ -12,13 +12,36 @@
         <maven.compiler.source>23</maven.compiler.source>
         <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <log4j-api.version>2.25.1</log4j-api.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>2.25.1</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 <dependencies>
     <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-core</artifactId>
         <version>10.2.2</version>
     </dependency>
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4j-api.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j-api.version}</version>
+    </dependency>
+
 
     <!-- Lucene Analyzer (StandardAnalyzer for text indexing) -->
     <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-analysis-common -->
@@ -47,6 +70,18 @@
         <groupId>com.formdev</groupId>
         <artifactId>flatlaf-intellij-themes</artifactId>
         <version>3.6</version>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>RELEASE</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>4.3.0</version>
+        <scope>test</scope>
     </dependency>
 </dependencies>
 </project>

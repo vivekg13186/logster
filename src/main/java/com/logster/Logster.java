@@ -6,31 +6,40 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
 public class Logster extends JFrame {
+
+    private static final Logger LOGGER = LogManager.getLogger();
+    private   final  DateDetection dateDetection;
     private final JTextField searchBox = new JTextField(30);
 
     private final SearchResultTM tableModel =new SearchResultTM(new ArrayList<>());
     private final  JTable resultTable = new JTable(tableModel);
 
-
+    private final DateField fromDateField= new DateField();
+    private final DateField toDateField= new DateField();
 
     private final JTabbedPane viewerTabs = new JTabbedPane();
 
     private FileIndexer indexer;
     private FileSearcher searcher;
-    private final String indexDir = "lucene_index";
-    JLabel searchLabel;
-    JButton searchBtn;
+    private final String indexDir = "logster_index";
+    final JLabel searchLabel  = new JLabel("File->Open Folder");
+    final JButton searchBtn=new JButton("Search");
+    final JCheckBox useDate= new JCheckBox();
     private final JProgressBar progressBar =new JProgressBar();
 
+    private final SettingsDialog settingsDialog = new SettingsDialog();
     public void setupMenu(){
         JMenu fileMenu = new JMenu("File");
-        JMenuItem openFolder = new JMenuItem("Open folder");
+        JMenuItem openFolder = new JMenuItem("Index folder");
         JMenuItem settingsMenu = new JMenuItem("Settings");
         fileMenu.add(openFolder);
         fileMenu.add(settingsMenu);
@@ -39,31 +48,28 @@ public class Logster extends JFrame {
         menuBar.add(fileMenu);
         setJMenuBar(menuBar);
         openFolder.addActionListener(_ -> chooseFolder());
+        settingsMenu.addActionListener(_->showSettingsDialog());
     }
-    public Logster() {
+
+    private void  showSettingsDialog(){
+        settingsDialog.setVisible(true);
+    }
+    public Logster() throws IOException {
         super("Logster");
+
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1000, 700);
         try {
-            setIconImage(ImageIO.read(Objects.requireNonNull(Logster.class.getResource("../../logo1.png"))));
-        } catch (IOException _) {
-             ;
+            setIconImage(ImageIO.read(Objects.requireNonNull(Logster.class.getResource("../../logo.png"))));
+        } catch (IOException e) {
+             LOGGER.error(e);
         }
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
-        searchLabel = new JLabel("File->Open Folder");
-        searchLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        searchLabel.setBorder(BorderFactory.createEmptyBorder(0,  2,0, 0));
-        topPanel.add(searchLabel);
-        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        JPanel searchRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        searchRow.setAlignmentX(Component.LEFT_ALIGNMENT); // align left
-        searchRow.add(searchBox);
-        searchBtn = new JButton("Search");
-        searchBtn.setEnabled(false);
-        searchRow.add(searchBtn);
-        topPanel.add(searchRow);
 
+         JPanel searchRow = Util.rows(searchBox,searchBtn,new JLabel("Use range"),useDate,fromDateField,toDateField);
+        JPanel topPanel = Util.columns(searchLabel,searchRow);
+
+        topPanel.add(searchRow);
+        searchBtn.setEnabled(false);
 
         resultTable.setAutoCreateRowSorter(true);
 
@@ -98,6 +104,10 @@ public class Logster extends JFrame {
             }
         }});
         setupMenu();
+        dateDetection =new DateDetection();
+        LocalDateTime date = LocalDateTime.now();
+        fromDateField.setDate(date.plusMinutes(10));
+        toDateField.setDate(date);
     }
 
     private void chooseFolder() {
@@ -118,11 +128,12 @@ public class Logster extends JFrame {
             protected Void doInBackground() {
                 try {
 
-                    indexer = new FileIndexer(indexDir);
+                    indexer = new FileIndexer(indexDir,dateDetection);
                     indexer.indexFolder(folder);
                     indexer.close();
                     searcher = new FileSearcher(indexDir);
-                } catch (Exception _) {   }
+                } catch (Exception e) {
+                    LOGGER.error(e); }
                 return null;
             }
             @Override
@@ -141,16 +152,25 @@ public class Logster extends JFrame {
         SwingWorker<List<SearchResult>, Void> worker = new SwingWorker<>() {
             protected List<SearchResult> doInBackground() throws Exception {
                 if (searcher == null) return Collections.emptyList();
-                return searcher.search(searchBox.getText(), 1000);
+                if(useDate.isSelected()){
+                    LocalDateTime from = fromDateField.getDate();
+                    LocalDateTime to = toDateField.getDate();
+                    if(from!=null && to !=null){
+                        return  searcher.search(searchBox.getText(), 10000, Util.toEpochMilli(from),Util.toEpochMilli(to));
+                    }
+
+                }
+                return searcher.search(searchBox.getText(), 10000);
             }
 
             protected void done() {
                 try {
                     tableModel.clear();
-
                     List<SearchResult> results = get();
                     for (SearchResult r : results) tableModel.addSearchResult(r);
-                } catch (Exception _) {  }
+                } catch (Exception e) {
+                    LOGGER.error(e);
+                }
             }
         };
         worker.execute();
@@ -162,6 +182,8 @@ public class Logster extends JFrame {
     }
 
     public static void main(String[] args) throws IOException, FontFormatException {
+
+        Configurator.setLevel("com.logster",Level.ERROR);
         System.setProperty("flatlaf.useWindowDecorations","false");
         FlatIntelliJLaf.setup();
         File ttfFile = new File(Objects.requireNonNull(Logster.class.getResource("../../fonts/Inter-Regular.ttf")).getFile()); // path to your Inter TTF
@@ -169,7 +191,13 @@ public class Logster extends JFrame {
 
 
         UIManager.getLookAndFeelDefaults().put("defaultFont", interFont);
-        SwingUtilities.invokeLater(() -> new Logster().setVisible(true));
+        SwingUtilities.invokeLater(() -> {
+            try {
+                new Logster().setVisible(true);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
 

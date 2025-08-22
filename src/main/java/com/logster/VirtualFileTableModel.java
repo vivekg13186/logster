@@ -1,7 +1,5 @@
 package com.logster;
-import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

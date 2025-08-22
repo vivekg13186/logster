@@ -3,9 +3,9 @@ package com.logster;
 
 
 public class SearchResult {
-    String filePath;
-    int lineNumber;
-    String lineContent;
+    final String filePath;
+    final int lineNumber;
+    final String lineContent;
 
     public SearchResult(String filePath, int lineNumber, String lineContent) {
         this.filePath = filePath;

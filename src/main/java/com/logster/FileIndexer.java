@@ -1,41 +1,63 @@
 package com.logster;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.*;
-import org.apache.lucene.queryparser.classic.*;
-import org.apache.lucene.search.*;
 import org.apache.lucene.store.*;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
 import java.io.*;
 import java.nio.file.*;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.regex.*;
+import java.util.prefs.*;
 
-class FileIndexer {private final Pattern timePattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}");
-    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
+import static com.logster.SettingsDialog.KEY_EXTENSION;
+
+class FileIndexer implements PreferenceChangeListener {
+    private static final Logger LOGGER = LogManager.getLogger();
+
+
     private final IndexWriter writer;
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
+    private final List<String> indexExtension = new ArrayList<>();
+    private final DateDetection dateDetection;
 
-    public FileIndexer(String indexDir) throws IOException {
+    public FileIndexer(String indexDir, DateDetection dateDetection) throws IOException {
+        this.dateDetection = dateDetection;
         Util.deleteDirectory(new File(indexDir));
-
+        SettingsDialog.prefs.addPreferenceChangeListener(this);
+        loadPreference();
         Directory dir = FSDirectory.open(Paths.get(indexDir));
         IndexWriterConfig config = new IndexWriterConfig(new StandardAnalyzer());
         writer = new IndexWriter(dir, config);
+
     }
 
-    public  boolean isIndexableFile(String name){
-        return  name.endsWith(".java")||name.endsWith(".txt")||name.endsWith(".csv")||name.endsWith(".log")||name.endsWith(".xml")||name.endsWith(".json");
+    private void loadPreference() {
+        String text = SettingsDialog.prefs.get(KEY_EXTENSION, ".log,.txt");
+        String[] result = text.split(",");
+        indexExtension.clear();
+        indexExtension.addAll(Arrays.asList(result));
+        LOGGER.info(String.join(",", indexExtension));
     }
-    public void indexFolder(File folder)   {
 
+    public boolean isIndexableFile(String name) {
+        for (String e : indexExtension) {
+            if (name.endsWith(e)) return true;
+        }
+
+        return false;
+    }
+
+    public void indexFolder(File folder) {
+        if (folder.listFiles() == null) return;
+        LOGGER.info("Scanning folder {}", folder);
 
         for (File f : Objects.requireNonNull(folder.listFiles())) {
 
@@ -43,14 +65,18 @@ class FileIndexer {private final Pattern timePattern = Pattern.compile("\\d{4}-\
                 indexFolder(f);
             } else if (isIndexableFile(f.getName())) {
                 executor.submit(() -> {
-                    try { indexFile(f); } catch (IOException _) {   }
+                    try {
+                        indexFile(f);
+                    } catch (IOException _) {
+                    }
                 });
             }
         }
     }
 
     private void indexFile(File file) throws IOException {
-        System.out.println("Indexing file"+file);
+
+        LOGGER.info("Indexing file {}", file);
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             int lineNo = 1;
@@ -61,17 +87,20 @@ class FileIndexer {private final Pattern timePattern = Pattern.compile("\\d{4}-\
                 doc.add(new StoredField("lineNumberStored", lineNo));
                 doc.add(new TextField("content", line, Field.Store.YES));
 
-                // Check for timestamp
-                Matcher m = timePattern.matcher(line);
-                if (m.find()) {
-                    try {
-                        Date timestamp = sdf.parse(m.group());
-                        doc.add(new LongPoint("timestamp", timestamp.getTime()));   // for range queries
-                        doc.add(new StoredField("timestampStored", timestamp.getTime())); // store for retrieval
-                    } catch (Exception e) { /* ignore parse errors */ }
+
+                LocalDateTime timestamp = dateDetection.parseLine(line);
+                if (timestamp != null) {
+
+                    long value = Util.toEpochMilli(timestamp);
+                    doc.add(new LongPoint("timestamp", value));   // for range queries
+                    doc.add(new StoredField("timestampStored", value)); // store for retrieval
+
                 }
 
-                synchronized (writer) { writer.addDocument(doc); }
+
+                synchronized (writer) {
+                    writer.addDocument(doc);
+                }
                 lineNo++;
             }
         }
@@ -79,7 +108,16 @@ class FileIndexer {private final Pattern timePattern = Pattern.compile("\\d{4}-\
 
     public void close() throws IOException {
         executor.shutdown();
-        try { executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); } catch (InterruptedException _) {  }
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.error(e);
+        }
         writer.close();
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        loadPreference();
     }
 }

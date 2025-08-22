@@ -7,7 +7,7 @@ import java.awt.*;
 class FileContentRenderer extends DefaultTableCellRenderer {
     public final long highlightLine;
 
-    public Color lineColor = new Color(0,0,0,30);
+    public final Color lineColor = new Color(0,0,0,30);
     public FileContentRenderer(long highlightLine) {
         this.highlightLine = highlightLine;
     }

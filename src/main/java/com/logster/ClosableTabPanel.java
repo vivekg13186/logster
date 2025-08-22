@@ -27,7 +27,7 @@ public class ClosableTabPanel extends JPanel {
         return panel;
     }
 
-    JTabbedPane tabbedPane ;
+    final JTabbedPane tabbedPane ;
     private void closeTab(){
         tabbedPane.remove(this);
     }
