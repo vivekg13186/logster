@@ -34,7 +34,8 @@ public class Logster extends JFrame {
     final JLabel searchLabel  = new JLabel("File->Open Folder");
     final JButton searchBtn=new JButton("Search");
     final JCheckBox useDate= new JCheckBox();
-    private final JProgressBar progressBar =new JProgressBar();
+
+    private final JLabel statusLabel  =new JLabel();
 
     private final SettingsDialog settingsDialog = new SettingsDialog();
     public void setupMenu(){
@@ -92,10 +93,9 @@ public class Logster extends JFrame {
 
         add(viewerTabs, BorderLayout.CENTER);
 
-        JPanel progressPanel = new JPanel(new BorderLayout());
-        progressPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        progressPanel.setPreferredSize(new Dimension(400, 30));
-        progressPanel.add(progressBar, BorderLayout.CENTER);
+
+        JPanel progressPanel = Util.rows( statusLabel);
+         progressPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 
         add(progressPanel,BorderLayout.SOUTH);
@@ -132,11 +132,12 @@ public class Logster extends JFrame {
 
 
     private void indexFolder(File folder) {
+        final Logster logster=this;
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             protected Void doInBackground() {
                 try {
 
-                    indexer = new FileIndexer(indexDir,dateDetection);
+                    indexer = new FileIndexer(indexDir,dateDetection,logster);
                     indexer.indexFolder(folder);
                     indexer.close();
                     searcher = new FileSearcher(indexDir);
@@ -147,11 +148,12 @@ public class Logster extends JFrame {
             @Override
             protected void done() {
                 searchBtn.setEnabled(true);
-                progressBar.setIndeterminate(false);
+
                 JOptionPane.showMessageDialog(Logster.this, "Indexing completed!");
+                updateStatus("ready for search");
             }
         };
-        progressBar.setIndeterminate(true);
+
         searchBtn.setEnabled(false);
         worker.execute();
     }
@@ -217,5 +219,8 @@ public class Logster extends JFrame {
         });
     }
 
+    public void updateStatus(String status){
+        statusLabel.setText(status);
+    }
 
 }

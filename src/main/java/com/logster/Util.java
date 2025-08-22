@@ -53,7 +53,7 @@ public class Util {
             component.setAlignmentX(Component.LEFT_ALIGNMENT);
             panel.add(Box.createRigidArea(new Dimension(0, 10)));
         }
-        panel.add(Box.createVerticalGlue());
+
         return panel;
     }
     static JPanel rows(JComponent... components){
@@ -66,7 +66,7 @@ public class Util {
             panel.add(component);
             panel.add(Box.createRigidArea(new Dimension(10, 0)));
         }
-        panel.add(Box.createVerticalGlue());
+
         return panel;
     }
 
