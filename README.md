@@ -45,3 +45,8 @@ You can download the latest release of Logster from the **[Releases page](../../
 ![Screenshot 2](./wiki/images/ss2.PNG)
 
 ![Screenshot 3](./wiki/images/ss2.PNG)
+
+## Media
+
+https://vivek13186.medium.com/logster-a-lightweight-desktop-app-for-browsing-and-searching-logs-10cf2fb5b0a0?sk=1a38e14e6d6f3f1395221e9864a8bc1c
+
