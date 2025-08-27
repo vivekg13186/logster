@@ -6,4 +6,6 @@ public interface SearchProgressListener {
     void onSearchCompleted(long timeTakenInSeconds);
     void onCancelled();
 
+    void onMaxLimit(int limit);
+
 }

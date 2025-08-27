@@ -1,6 +1,7 @@
 package com.logster;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +42,12 @@ public class Logster extends JFrame implements SearchProgressListener {
 
     private final SettingsDialog settingsDialog = new SettingsDialog();
     private final JProgressBar progressBar = new JProgressBar();
+
+    Icon cancelIcon =new FlatSVGIcon("icons/cancel.svg", 16, 16);
+    Icon limitIcon =new FlatSVGIcon("icons/limit.svg", 16, 16);
+    Icon searchingIcon =new FlatSVGIcon("icons/searching.svg", 16, 16);
+    Icon thumbsUpIcon =new FlatSVGIcon("icons/thumbsup.svg", 16, 16);
+    JLabel statusIconLabel = new JLabel(thumbsUpIcon);
 
     public void setupMenu() {
         JMenu fileMenu = new JMenu("File");
@@ -110,8 +117,12 @@ public class Logster extends JFrame implements SearchProgressListener {
         stopSearchBtn.addActionListener((_)->
         {
             controller.cancel();
+            statusLabel.setText("search cancelled");
+            progressBar.setValue(0);
+            statusIconLabel.setIcon(cancelIcon);
+            statusIconLabel.setToolTipText("Search cancelled");
         });
-        JPanel progressPanel = Util.rows(statusLabel,progressBar,stopSearchBtn);
+        JPanel progressPanel = Util.rows(statusIconLabel,statusLabel,progressBar,stopSearchBtn);
         progressPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 
@@ -213,11 +224,11 @@ public class Logster extends JFrame implements SearchProgressListener {
     @Override
     public void onResultFound(SearchResult result,int noOfFiles,int processedFiles) {
         SwingUtilities.invokeLater(() -> {
-            tableModel.addSearchResult(result);
-            float progress = ((float) processedFiles /(float)noOfFiles)*100;
-            System.out.println(Math.floor(progress));
-            progressBar.setValue((int) Math.floor(progress));
-            statusLabel.setText(String.format("%d results ,%d of %d files ,searching....", tableModel.getRowCount(),processedFiles,noOfFiles));
+                tableModel.addSearchResult(result);
+                int y =processedFiles+1;
+                float progress = ((float) y / (float) noOfFiles) * 100;
+                progressBar.setValue((int) Math.floor(progress));
+                statusLabel.setText(String.format("%d results ,%d of %d files ,searching....", tableModel.getRowCount(), y, noOfFiles));
         });
 
     }
@@ -227,21 +238,30 @@ public class Logster extends JFrame implements SearchProgressListener {
         resultTable.clearSelection();
         statusLabel.setText("collecting file information..");
         progressBar.setValue(0);
+        statusIconLabel.setIcon(searchingIcon);
+        statusIconLabel.setToolTipText("Searching files");
     }
 
     @Override
     public void onSearchCompleted(long timeTakenInSeconds) {
         SwingUtilities.invokeLater(() -> {
-            if(!controller.isCancelled()) {
                 progressBar.setValue(100);
                 statusLabel.setText(String.format("%d results in %d seconds", tableModel.getRowCount(), timeTakenInSeconds));
-            }
+            statusIconLabel.setIcon(thumbsUpIcon);
+            statusIconLabel.setToolTipText("Search finished");
         });
 
     }
 
     @Override
     public void onCancelled() {
-        statusLabel.setText("search cancelled");
+
+    }
+
+    @Override
+    public void onMaxLimit(int limit) {
+        statusIconLabel.setIcon(limitIcon);
+        statusIconLabel.setToolTipText("Search limit reached");
+
     }
 }

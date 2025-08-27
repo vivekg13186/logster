@@ -72,7 +72,7 @@ public class SimpleFileSearch {
             int finalI = i;
             batch.parallelStream().forEach(path -> {
                 if (controller.isCancelled()) {
-                    listener.onCancelled();
+listener.onCancelled();
                     return;
                 }
 
@@ -80,13 +80,17 @@ public class SimpleFileSearch {
 
                 List<SearchResult> results = searchFile(path, pattern);
                 for (SearchResult r : results) {
-                    if (controller.isCancelled()) break;
+                    if (controller.isCancelled()){
+                        listener.onCancelled();
+                        break;
+                    }
                     int count = resultCount.incrementAndGet();
                     if (count <= maxResults) {
                         listener.onResultFound(r,allFiles, finalI);
                     } else {
-                        listener.onCancelled();
                         controller.cancel();
+
+                        listener.onMaxLimit(maxResults);
                         break;
                     }
                 }
