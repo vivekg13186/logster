@@ -3,7 +3,7 @@ package com.logster;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.io.File;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,16 +34,8 @@ public class Util {
             table.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
     }
-    static void deleteDirectory(File directoryToBeDeleted) {
-        File[] allContents = directoryToBeDeleted.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
-        }
-        directoryToBeDeleted.delete();
-    }
-    static JPanel columns(JComponent... components){
+
+    public static JPanel columns(JComponent... components){
         JPanel panel=  new JPanel();
         BoxLayout layout =new BoxLayout(panel,BoxLayout.Y_AXIS);
         panel.setLayout(layout);
@@ -56,7 +48,7 @@ public class Util {
 
         return panel;
     }
-    static JPanel rows(JComponent... components){
+    public static JPanel rows(JComponent... components){
         JPanel panel=  new JPanel();
         BoxLayout layout =new BoxLayout(panel,BoxLayout.X_AXIS);
         panel.setLayout(layout);
@@ -71,6 +63,9 @@ public class Util {
     }
 
 
+    public static void padding(JPanel panel,int pad){
+        panel.setBorder(BorderFactory.createEmptyBorder(pad,pad,pad,pad));
+    }
     public static long toEpochMilli(LocalDateTime timestamp){
         return timestamp.atZone(ZoneId.of("UTC")).toInstant().toEpochMilli();
     }

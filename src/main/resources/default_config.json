@@ -1,0 +1,13 @@
+{
+  "dateFormats": [
+    {
+      "regExp": "(\\d\\d\\d\\d-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d)",
+      "dateFormat": "yyyy-MM-dd HH:mm:ss"
+    },
+    {
+      "regExp": "(\\d\\d\\d\\d-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d)",
+      "dateFormat": "dd-MM-yyyy HH:mm:ss"
+    }
+  ],
+  "ignoreFileExtensions": [".gitignore"]
+}

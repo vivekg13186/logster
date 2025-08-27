@@ -1,5 +1,6 @@
-package com.logster;
+package com.logster.search;
 
+import com.logster.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,50 +16,44 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.logster.SettingsDialog.KEY_EXTENSION;
+
+import static java.nio.file.Files.walk;
 
 public class SimpleFileSearch {
 
 
-    public SimpleFileSearch() {
+    private final List<String> ignoreExtension;
+    public SimpleFileSearch(List<String> ignoreExtension) {
+        this.ignoreExtension = ignoreExtension;
 
-        loadPreference();
     }
 
-    private final List<String> indexExtension = new ArrayList<>();
+
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private void loadPreference() {
-        String text = SettingsDialog.prefs.get(KEY_EXTENSION, ".log,.txt");
-        indexExtension.clear();
-        indexExtension.addAll(Arrays.asList(text.split(",")));
-        LOGGER.info("Indexable extensions: {}", String.join(",", indexExtension));
-    }
 
-    public void search(String filePath, String queryStr, SearchProgressListener listener, SearchController controller,DateDetection dateDetection,long startTime,long endTime) throws Exception {
+
+    public void search(String filePath, String queryStr, SearchProgressListener listener, SearchController controller, DateDetection dateDetection, long startTime, long endTime) throws Exception {
         long timeTakenInSeconds;
 
 
-        Path rootDir = Paths.get(filePath);
+
         Pattern pattern = Pattern.compile(queryStr);
 
         Instant start = Instant.now();
         AtomicInteger resultCount = new AtomicInteger(0);
-        AtomicBoolean limitReached = new AtomicBoolean(false);
+
 
         int maxResults = 10000;
         listener.onSearchStarted();
 
         List<Path> allPaths;
-        try (Stream<Path> stream = Files.walk(Paths.get(filePath))) {
+        try (Stream<Path> stream = walk(Paths.get(filePath))) {
             allPaths = stream .toList();
         }
         int batchSize = 100;
@@ -73,7 +68,7 @@ public class SimpleFileSearch {
             int finalI = i;
             batch.parallelStream().forEach(path -> {
                 if (controller.isCancelled()) {
-                    listener.onCancelled();
+
                     return;
                 }
 
@@ -82,7 +77,7 @@ public class SimpleFileSearch {
                 List<SearchResult> results = searchFile(path, pattern,dateDetection,startTime,endTime);
                 for (SearchResult r : results) {
                     if (controller.isCancelled()){
-                        listener.onCancelled();
+
                         break;
                     }
                     int count = resultCount.incrementAndGet();
@@ -141,12 +136,12 @@ public class SimpleFileSearch {
     }
 
     private boolean isIgnored(Path path) {
-        for (String ignore : indexExtension) {
+        for (String ignore : ignoreExtension) {
             if (path.toString().contains(ignore)) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     private static boolean isBinary(Path path) {

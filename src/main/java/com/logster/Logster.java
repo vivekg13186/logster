@@ -2,10 +2,14 @@ package com.logster;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.logster.config.ConfigPanel;
+import com.logster.search.*;
+import com.logster.test.TestPanel;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.apache.logging.log4j.core.config.Configurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -17,11 +21,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Logster extends JFrame implements SearchProgressListener {
 
-    private static final Logger LOGGER = LogManager.getLogger();
-    private final DateDetection dateDetection;
+    private static final Logger logger = LoggerFactory.getLogger(Logster.class);
+
     private final JTextField searchBox = new JTextField(30);
 
     private final SearchResultTM tableModel = new SearchResultTM(new ArrayList<>());
@@ -38,34 +43,20 @@ public class Logster extends JFrame implements SearchProgressListener {
     final JCheckBox useDate = new JCheckBox();
 
     private final JLabel statusLabel = new JLabel();
-    SearchController controller = new SearchController();
+    final SearchController controller = new SearchController();
 
-    private final SettingsDialog settingsDialog = new SettingsDialog();
+
     private final JProgressBar progressBar = new JProgressBar();
 
-    Icon cancelIcon =new FlatSVGIcon("icons/cancel.svg", 16, 16);
-    Icon limitIcon =new FlatSVGIcon("icons/limit.svg", 16, 16);
-    Icon searchingIcon =new FlatSVGIcon("icons/searching.svg", 16, 16);
-    Icon thumbsUpIcon =new FlatSVGIcon("icons/thumbsup.svg", 16, 16);
-    JLabel statusIconLabel = new JLabel(thumbsUpIcon);
+    private final Icon cancelIcon =new FlatSVGIcon("icons/cancel.svg", 16, 16);
+    private final Icon limitIcon =new FlatSVGIcon("icons/limit.svg", 16, 16);
+    private final Icon searchingIcon =new FlatSVGIcon("icons/searching.svg", 16, 16);
+    private final Icon thumbsUpIcon =new FlatSVGIcon("icons/thumbsUp.svg", 16, 16);
+    private final JLabel statusIconLabel = new JLabel(thumbsUpIcon);
 
-    public void setupMenu() {
-        JMenu fileMenu = new JMenu("File");
-        JMenuItem openFolder = new JMenuItem("Index folder");
-        JMenuItem settingsMenu = new JMenuItem("Settings");
-        fileMenu.add(openFolder);
-        fileMenu.add(settingsMenu);
 
-        JMenuBar menuBar = new JMenuBar();
-        menuBar.add(fileMenu);
-        setJMenuBar(menuBar);
-        openFolder.addActionListener(_ -> chooseFolder());
-        settingsMenu.addActionListener(_ -> showSettingsDialog());
-    }
 
-    private void showSettingsDialog() {
-        settingsDialog.setVisible(true);
-    }
+
 
     public void loadIcon() {
 
@@ -76,7 +67,7 @@ public class Logster extends JFrame implements SearchProgressListener {
 
             setIconImage(ImageIO.read(is));
         } catch (Exception e) {
-            LOGGER.error(e);
+            logger.error("error",e);
         }
     }
 
@@ -89,9 +80,7 @@ public class Logster extends JFrame implements SearchProgressListener {
 
 
         JButton openFolderBtn = new JButton("Select folder");
-        openFolderBtn.addActionListener((_) -> {
-            chooseFolder();
-        });
+        openFolderBtn.addActionListener((_) -> chooseFolder());
         JPanel searchRow = Util.rows(searchBox, searchBtn, new JLabel("Use range"), useDate, fromDateField, toDateField);
         JPanel folderPanel = Util.rows(locationTextBox, openFolderBtn);
         JPanel topPanel = Util.columns(folderPanel, searchRow);
@@ -109,7 +98,9 @@ public class Logster extends JFrame implements SearchProgressListener {
         searchPanel.add(new JScrollPane(resultTable), BorderLayout.CENTER);
         searchPanel.add(topPanel, BorderLayout.NORTH);
         viewerTabs.add(searchPanel, "Search");
-        viewerTabs.add(new SettingsDialog(),"Settings");
+
+        viewerTabs.add(new ConfigPanel(),"Config");
+        viewerTabs.add(new TestPanel(),"Test");
 
         add(viewerTabs, BorderLayout.CENTER);
 
@@ -141,8 +132,7 @@ public class Logster extends JFrame implements SearchProgressListener {
                 }
             }
         });
-        setupMenu();
-        dateDetection = new DateDetection();
+
         LocalDateTime date = LocalDateTime.now();
         fromDateField.setDate(date.plusMinutes(10));
         toDateField.setDate(date);
@@ -170,11 +160,12 @@ public class Logster extends JFrame implements SearchProgressListener {
         SearchProgressListener listener = this;
         new SwingWorker<>() {
             protected String doInBackground() throws Exception {
-                SimpleFileSearch search = new SimpleFileSearch();
+
+                SimpleFileSearch search = new SimpleFileSearch(Objects.requireNonNullElse(ConfigPanel.getConfig().ignoreFileExtensions(),new ArrayList<>()));
                 if(useDate.isSelected()){
                     long start= Util.toEpochMilli(fromDateField.getDate());
                     long end = Util.toEpochMilli(toDateField.getDate());
-                    search.search(locationTextBox.getText(), searchBox.getText(), listener,controller,dateDetection,start,end);
+                    search.search(locationTextBox.getText(), searchBox.getText(), listener,controller, DateDetection.dateDetection,start,end);
 
                 }else{
 
@@ -192,7 +183,7 @@ public class Logster extends JFrame implements SearchProgressListener {
 
     private void openViewer(SearchResult r) {
 
-        new FileContentViewer(viewerTabs, new File(r.filePath), r.lineNumber);
+        new FileContentViewer(viewerTabs, new File(r.filePath()), r.lineNumber());
     }
 
     public static void loadFont() {
@@ -203,7 +194,7 @@ public class Logster extends JFrame implements SearchProgressListener {
             Font inter = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(12f);
             UIManager.put("defaultFont", inter);
         } catch (Exception e) {
-            LOGGER.error(e);
+            logger.error("error",e);
         }
     }
 
@@ -257,10 +248,7 @@ public class Logster extends JFrame implements SearchProgressListener {
 
     }
 
-    @Override
-    public void onCancelled() {
 
-    }
 
     @Override
     public void onMaxLimit(int limit) {

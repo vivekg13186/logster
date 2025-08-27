@@ -1,4 +1,4 @@
-package com.logster;
+package com.logster.search;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

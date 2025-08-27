@@ -1,5 +1,7 @@
 package com.logster;
 
+import com.logster.search.SearchResult;
+
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
@@ -25,9 +27,9 @@ public class SearchResultTM extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         SearchResult p = searchResults.get(rowIndex);
         return switch (columnIndex) {
-            case 0 -> p.lineNumber;
+            case 0 -> p.lineNumber();
             case 1 -> p;
-            case 2 -> p.filePath;
+            case 2 -> p.filePath();
             default -> null;
         };
     }

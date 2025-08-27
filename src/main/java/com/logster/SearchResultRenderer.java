@@ -1,7 +1,9 @@
 package com.logster;
 
+import com.logster.search.MatchPosition;
+import com.logster.search.SearchResult;
+
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.*;
 import java.awt.*;
@@ -10,7 +12,7 @@ public class SearchResultRenderer implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if(value instanceof SearchResult searchResult){
-            return createHighlightedTextPane(searchResult.getLineContent(),searchResult.matchPositions);
+            return createHighlightedTextPane(searchResult.lineContent(), searchResult.matchPositions());
         }
         return new JLabel("");
     }
@@ -25,12 +27,12 @@ public class SearchResultRenderer implements TableCellRenderer {
         AttributeSet highlightStyle = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Background, Color.YELLOW);
 
         for (MatchPosition range : ranges) {
-            int start = range.start;
-            int end = range.end;
+            int start = range.start();
+            int end = range.end();
             try {
                 doc.setCharacterAttributes(start, end - start, highlightStyle, false);
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Exception _) {
+
             }
         }
 

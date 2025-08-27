@@ -1,5 +1,7 @@
 package com.logster;
 
+import com.logster.search.MatchPosition;
+
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
@@ -36,12 +38,12 @@ public class HigilightTest {
         AttributeSet highlightStyle = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Background, Color.YELLOW);
 
         for (MatchPosition range : ranges) {
-            int start = range.start;
-            int end = range.end;
+            int start = range.start();
+            int end = range.end();
             try {
                 doc.setCharacterAttributes(start, end - start, highlightStyle, false);
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Exception _) {
+
             }
         }
 
