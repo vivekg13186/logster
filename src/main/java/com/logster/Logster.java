@@ -28,8 +28,7 @@ public class Logster extends JFrame {
 
     private final JTabbedPane viewerTabs = new JTabbedPane();
 
-    private FileIndexer indexer;
-    private FileSearcher searcher;
+
     private final String indexDir = "logster_index";
     final JLabel searchLabel  = new JLabel("File->Open Folder");
     final JButton searchBtn=new JButton("Search");
@@ -78,7 +77,6 @@ public class Logster extends JFrame {
         JPanel topPanel = Util.columns(searchLabel,searchRow);
 
         topPanel.add(searchRow);
-        searchBtn.setEnabled(false);
 
         resultTable.setAutoCreateRowSorter(true);
 
@@ -118,65 +116,48 @@ public class Logster extends JFrame {
         toDateField.setDate(date);
     }
 
+    private File selectedFolder;
     private void chooseFolder() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int res = chooser.showOpenDialog(this);
         if (res == JFileChooser.APPROVE_OPTION) {
-            File selectedFolder = chooser.getSelectedFile();
+              selectedFolder = chooser.getSelectedFile();
             searchLabel.setText(selectedFolder.getAbsolutePath());
-            indexFolder(selectedFolder);
+
         }
     }
 
 
 
-    private void indexFolder(File folder) {
-        final Logster logster=this;
-        SwingWorker<Void, Void> worker = new SwingWorker<>() {
-            protected Void doInBackground() {
-                try {
 
-                    indexer = new FileIndexer(indexDir,dateDetection,logster);
-                    indexer.indexFolder(folder);
-                    indexer.close();
-                    searcher = new FileSearcher(indexDir);
-                } catch (Exception e) {
-                    LOGGER.error(e); }
-                return null;
-            }
-            @Override
-            protected void done() {
-                searchBtn.setEnabled(true);
-
-                JOptionPane.showMessageDialog(Logster.this, "Indexing completed!");
-                updateStatus("ready for search");
-            }
-        };
-
-        searchBtn.setEnabled(false);
-        worker.execute();
-    }
 
     private void performSearch() {
-        SwingWorker<List<SearchResult>, Void> worker = new SwingWorker<>() {
-            protected List<SearchResult> doInBackground() throws Exception {
-                if (searcher == null) return Collections.emptyList();
-                if(useDate.isSelected()){
-                    LocalDateTime from = fromDateField.getDate();
-                    LocalDateTime to = toDateField.getDate();
-                    if(from!=null && to !=null){
-                        return  searcher.search(searchBox.getText(), 10000, Util.toEpochMilli(from),Util.toEpochMilli(to));
-                    }
+        statusLabel.setText("Searching ....");
+        if(searchBox.getText()==null || selectedFolder==null || searchBox.getText().isBlank()){
+            return;
+        }
+          tableModel.clear();
+        SwingWorker< SearchStats , Void> worker = new SwingWorker<>() {
+            protected  SearchStats  doInBackground() throws Exception {
 
-                }
-                return searcher.search(searchBox.getText(), 10000);
+                /*if(useDate.isSelected()){
+
+
+                }*/
+
+                SimpleFileSearch search =new SimpleFileSearch();
+
+                List<SearchResult>searchResults =  search.search(selectedFolder.getAbsolutePath(),searchBox.getText(),1000);
+                return  new SearchStats(search.getTimeTakenInSeconds(),searchResults);
             }
 
             protected void done() {
                 try {
-                    tableModel.clear();
-                    List<SearchResult> results = get();
+
+                    SearchStats searchStats = get();
+                    statusLabel.setText(String.format("Time taken %d in seconds", searchStats.timeInSeconds));
+                    List<SearchResult> results = searchStats.searchResults;
                     for (SearchResult r : results) tableModel.addSearchResult(r);
                 } catch (Exception e) {
                     LOGGER.error(e);
@@ -184,6 +165,7 @@ public class Logster extends JFrame {
             }
         };
         worker.execute();
+
     }
 
     private void openViewer(SearchResult r) {
