@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +43,7 @@ public class SimpleFileSearch {
         LOGGER.info("Indexable extensions: {}", String.join(",", indexExtension));
     }
 
-    public void search(String filePath, String queryStr, SearchProgressListener listener, SearchController controller) throws Exception {
+    public void search(String filePath, String queryStr, SearchProgressListener listener, SearchController controller,DateDetection dateDetection,long startTime,long endTime) throws Exception {
         long timeTakenInSeconds;
 
 
@@ -72,13 +73,13 @@ public class SimpleFileSearch {
             int finalI = i;
             batch.parallelStream().forEach(path -> {
                 if (controller.isCancelled()) {
-listener.onCancelled();
+                    listener.onCancelled();
                     return;
                 }
 
                 if(!Files.isRegularFile(path)||isIgnored(path)||isBinary(path))return;
 
-                List<SearchResult> results = searchFile(path, pattern);
+                List<SearchResult> results = searchFile(path, pattern,dateDetection,startTime,endTime);
                 for (SearchResult r : results) {
                     if (controller.isCancelled()){
                         listener.onCancelled();
@@ -89,17 +90,12 @@ listener.onCancelled();
                         listener.onResultFound(r,allFiles, finalI);
                     } else {
                         controller.cancel();
-
                         listener.onMaxLimit(maxResults);
                         break;
                     }
                 }
             });
         }
-
-
-
-
 
         Instant end = Instant.now();
         timeTakenInSeconds = Duration.between(start, end).toSeconds();
@@ -108,12 +104,24 @@ listener.onCancelled();
 
     }
 
-    private static List<SearchResult> searchFile(Path path, Pattern pattern) {
+    private static List<SearchResult> searchFile(Path path, Pattern pattern,DateDetection dateDetection,long startTime,long endTime) {
         List<SearchResult> matches = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(path)) {
             String line;
             int lineNum = 1;
             while ((line = br.readLine()) != null) {
+
+                if(dateDetection!=null){
+                    LocalDateTime lineTime = dateDetection.parseLine(line);
+                    if(lineTime!=null){
+                          long diff = Util.toEpochMilli(lineTime);
+                          if(diff<startTime || diff>endTime){
+                              break; //not in our time range
+                          }
+                    }else{
+                        break;//not time in line
+                    }
+                }
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
                     List<MatchPosition> matchPositions = new ArrayList<>();

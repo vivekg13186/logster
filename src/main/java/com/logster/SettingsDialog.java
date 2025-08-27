@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.prefs.Preferences;
 
-public class SettingsDialog extends JDialog {
+public class SettingsDialog extends JPanel {
 
     public static final String KEY_EXTENSION="extensions";
     public static final String KEY_DATE_FORMATS="date-formats";
@@ -48,7 +48,7 @@ public class SettingsDialog extends JDialog {
 
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
         add(mainPanel);
-        setTitle("Settings");
+        //setTitle("Settings");
         setSize(400,400);
     }
 
@@ -59,7 +59,7 @@ public class SettingsDialog extends JDialog {
                 throw new IllegalStateException("Font not found!");
             }
 
-            setIconImage(ImageIO.read(is));
+            //setIconImage(ImageIO.read(is));
         } catch (Exception e) {
             LOGGER.error(e);
         }

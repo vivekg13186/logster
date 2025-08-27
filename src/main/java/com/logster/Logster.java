@@ -109,6 +109,7 @@ public class Logster extends JFrame implements SearchProgressListener {
         searchPanel.add(new JScrollPane(resultTable), BorderLayout.CENTER);
         searchPanel.add(topPanel, BorderLayout.NORTH);
         viewerTabs.add(searchPanel, "Search");
+        viewerTabs.add(new SettingsDialog(),"Settings");
 
         add(viewerTabs, BorderLayout.CENTER);
 
@@ -169,15 +170,18 @@ public class Logster extends JFrame implements SearchProgressListener {
         SearchProgressListener listener = this;
         new SwingWorker<>() {
             protected String doInBackground() throws Exception {
-
-                /*if(useDate.isSelected()){
-
-
-                }*/
-
                 SimpleFileSearch search = new SimpleFileSearch();
+                if(useDate.isSelected()){
+                    long start= Util.toEpochMilli(fromDateField.getDate());
+                    long end = Util.toEpochMilli(toDateField.getDate());
+                    search.search(locationTextBox.getText(), searchBox.getText(), listener,controller,dateDetection,start,end);
 
-                search.search(locationTextBox.getText(), searchBox.getText(), listener,controller);
+                }else{
+
+                    search.search(locationTextBox.getText(), searchBox.getText(), listener,controller,null,-1,-1);
+
+                }
+
                 return "OK";
             }
 
