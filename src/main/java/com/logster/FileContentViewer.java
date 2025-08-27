@@ -14,7 +14,7 @@ public class FileContentViewer extends ClosableTabPanel {
     public FileContentViewer(JTabbedPane tabbedPane, File file, int highlightLine) {
         super(tabbedPane, file.getName());
 
-        VirtualFileTableModel model = new VirtualFileTableModel(file, 1);
+        VirtualFileTableModel model = new VirtualFileTableModel(file, Math.max(highlightLine-2000,0), highlightLine+2000 );
         JTable table = new JTable(model);
         Util.setTableRenderer(table,new FileContentRenderer(highlightLine));
 

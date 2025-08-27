@@ -1,20 +1,26 @@
 package com.logster;
 
 
+import java.util.List;
 
 public class SearchResult {
     final String filePath;
     final int lineNumber;
-    final String lineContent;
+    private  String lineContent;
+    final List<MatchPosition> matchPositions;
 
-    public SearchResult(String filePath, int lineNumber, String lineContent) {
+    public SearchResult(String filePath, int lineNumber, String lineContent,List<MatchPosition> positions) {
         this.filePath = filePath;
         this.lineNumber = lineNumber;
         this.lineContent = lineContent;
+        this.matchPositions = positions;
     }
 
+    public String getLineContent() {
+        return lineContent;
+    }
 
-
-
-
+    public void setLineContent(String lineContent) {
+        this.lineContent = lineContent;
+    }
 }

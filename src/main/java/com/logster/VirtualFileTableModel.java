@@ -1,34 +1,29 @@
 package com.logster;
+
 import javax.swing.table.AbstractTableModel;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-public class  VirtualFileTableModel extends AbstractTableModel {
+
+public class VirtualFileTableModel extends AbstractTableModel {
 
     private final String[] columnNames = {"lno", "content"};
     private final File file;
     public final int startLineNumber;
-    private final int cacheSize = 1000; // number of lines to cache
-    private final List<String> cache = new ArrayList<>();
-    private long cacheStartLine = 0; // line number in file corresponding to cache.get(0)
-    private long totalLines = -1;
+    public final int endLineNumber;
+    private final List<String> lines = new ArrayList<>();
 
-    public VirtualFileTableModel(File file, int startLineNumber) {
+    public VirtualFileTableModel(File file, int startLineNumber, int endLineNumber) {
         this.file = file;
         this.startLineNumber = startLineNumber;
+        this.endLineNumber = endLineNumber;
+        loadLines();
     }
 
     @Override
     public int getRowCount() {
-        try {
-            if (totalLines < 0) {
-                totalLines = countTotalLines();
-            }
-        } catch (IOException _) {
-
-        }
-        return (int) Math.max(totalLines - startLineNumber + 1, 0);
+        return lines.size();
     }
 
     @Override
@@ -38,14 +33,10 @@ public class  VirtualFileTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        long lineNumber = rowIndex + startLineNumber;
-        String lineContent = getLine(lineNumber);
+        int lineNumber = startLineNumber + rowIndex;
+        String lineContent = lines.get(rowIndex);
 
-        if (columnIndex == 0) {
-            return lineNumber;
-        } else {
-            return lineContent;
-        }
+        return columnIndex == 0 ? lineNumber : lineContent;
     }
 
     @Override
@@ -53,42 +44,20 @@ public class  VirtualFileTableModel extends AbstractTableModel {
         return columnNames[column];
     }
 
-
-
-    private String getLine(long lineNumber) {
-        if (lineNumber < cacheStartLine || lineNumber >= cacheStartLine + cache.size()) {
-            try {
-                loadCache(lineNumber);
-            } catch (IOException _) {
-
-                return "";
-            }
-        }
-        int index = (int) (lineNumber - cacheStartLine);
-        return index >= 0 && index < cache.size() ? cache.get(index) : "";
-    }
-
-    private void loadCache(long lineNumber) throws IOException {
-        cache.clear();
-        cacheStartLine = lineNumber;
-
+    private void loadLines() {
+        lines.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
-            long skip = lineNumber - 1;
-            for (long i = 0; i < skip; i++) br.readLine(); // skip lines
+            int currentLine = 1;
             String line;
-            int count = 0;
-            while (count < cacheSize && (line = br.readLine()) != null) {
-                cache.add(line);
-                count++;
+            while ((line = br.readLine()) != null) {
+                if (currentLine >= startLineNumber && currentLine <= endLineNumber) {
+                    lines.add(line);
+                }
+                if (currentLine > endLineNumber) break;
+                currentLine++;
             }
+        } catch (IOException e) {
+            lines.add("[Error reading file]");
         }
-    }
-
-    private long countTotalLines() throws IOException {
-        long lines = 0;
-        try (BufferedReader br = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
-            while (br.readLine() != null) lines++;
-        }
-        return lines;
     }
 }

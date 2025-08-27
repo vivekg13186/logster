@@ -82,11 +82,7 @@
         </dependencies>
     </dependencyManagement>
 <dependencies>
-    <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-core</artifactId>
-        <version>10.2.2</version>
-    </dependency>
+
     <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-api</artifactId>
@@ -99,29 +95,14 @@
     </dependency>
 
 
-    <!-- Lucene Analyzer (StandardAnalyzer for text indexing) -->
-    <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-analysis-common -->
-    <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-analysis-common</artifactId>
-        <version>10.2.2</version>
-    </dependency>
+
     <dependency>
         <groupId>com.formdev</groupId>
         <artifactId>flatlaf-extras</artifactId>
         <version>3.5.4</version>
     </dependency>
-    <dependency>
-        <groupId>org.ahocorasick</groupId>
-        <artifactId>ahocorasick</artifactId>
-        <version>0.6.3</version>
-    </dependency>
-    <!-- Lucene QueryParser -->
-    <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-queryparser</artifactId>
-        <version>10.2.2</version>
-    </dependency>
+
+
     <dependency>
         <groupId>com.formdev</groupId>
         <artifactId>flatlaf</artifactId>

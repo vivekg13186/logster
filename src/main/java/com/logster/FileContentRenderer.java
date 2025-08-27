@@ -20,7 +20,7 @@ class FileContentRenderer extends DefaultTableCellRenderer {
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
         int modelRow = table.convertRowIndexToModel(row);
-        long lineNumber = (long) table.getModel().getValueAt(modelRow, 0);
+        int lineNumber = (int) table.getModel().getValueAt(modelRow, 0);
 
         if (lineNumber == highlightLine) {
             c.setBackground(Color.YELLOW); // highlight color

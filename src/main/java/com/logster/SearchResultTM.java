@@ -26,7 +26,7 @@ public class SearchResultTM extends AbstractTableModel {
         SearchResult p = searchResults.get(rowIndex);
         return switch (columnIndex) {
             case 0 -> p.lineNumber;
-            case 1 -> p.lineContent;
+            case 1 -> p;
             case 2 -> p.filePath;
             default -> null;
         };
