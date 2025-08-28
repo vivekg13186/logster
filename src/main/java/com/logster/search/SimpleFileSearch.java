@@ -1,8 +1,10 @@
 package com.logster.search;
 
+import com.logster.Logster;
 import com.logster.Util;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,11 +36,12 @@ public class SimpleFileSearch {
     }
 
 
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(SimpleFileSearch.class);
 
 
 
     public void search(String filePath, String queryStr, SearchProgressListener listener, SearchController controller, DateDetection dateDetection, long startTime, long endTime) throws Exception {
+        logger.error("file {} query {}",filePath,queryStr);
         long timeTakenInSeconds;
 
 
@@ -101,9 +104,10 @@ public class SimpleFileSearch {
 
     private static List<SearchResult> searchFile(Path path, Pattern pattern,DateDetection dateDetection,long startTime,long endTime) {
         List<SearchResult> matches = new ArrayList<>();
+        int lineNum = 1;
         try (BufferedReader br = Files.newBufferedReader(path)) {
             String line;
-            int lineNum = 1;
+
             while ((line = br.readLine()) != null) {
 
                 if(dateDetection!=null){
@@ -131,6 +135,9 @@ public class SimpleFileSearch {
             }
         } catch (IOException ignored) {
             // Skip unreadable files
+        }
+        for(SearchResult m :matches){
+            m.setLineCount(lineNum-1);
         }
         return matches;
     }

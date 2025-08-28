@@ -2,11 +2,14 @@ package com.logster;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.logster.config.AppConfiguration;
 import com.logster.config.ConfigPanel;
+import com.logster.config.IgnoreFileExtensionPanel;
 import com.logster.search.*;
 import com.logster.test.TestPanel;
 import com.logster.ui.SearchPanel;
 import com.logster.ui.SearchPanelListener;
+
 import com.logster.ui.StatusBar;
 
 import org.slf4j.Logger;
@@ -20,6 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Objects;
+
+import static com.logster.ui.Icons.extensionIcon;
+import static com.logster.ui.Icons.labIcon;
 
 public class Logster extends JFrame implements SearchProgressListener, SearchPanelListener {
 
@@ -38,7 +44,6 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
             if (is == null) {
                 throw new IllegalStateException("Font not found!");
             }
-
             setIconImage(ImageIO.read(is));
         } catch (Exception e) {
             logger.error("error", e);
@@ -52,7 +57,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
         setSize(1000, 700);
         loadIcon();
         searchPanel.setListener(this);
-        viewerTabs.add(new ConfigPanel(), "Config");
+
         add(viewerTabs, BorderLayout.CENTER);
         statusBar.setOnSearchCancel(new Runnable() {
             @Override
@@ -73,18 +78,23 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
         JMenu fileMenu = new JMenu("File");
-        JMenuItem testMenuItem = new JMenuItem("Text Regex", new FlatSVGIcon("icons/lab.svg", 16, 16));
+        JMenuItem testMenuItem = new JMenuItem("Text Regex", labIcon);
         testMenuItem.addActionListener((_) -> {
             new TestPanel(viewerTabs);
         });
         fileMenu.add(testMenuItem);
+        JMenuItem fileExtensionMenuItem = new JMenuItem("Exclude File Types",extensionIcon);
+        fileExtensionMenuItem.addActionListener((_) -> {
+            new IgnoreFileExtensionPanel(viewerTabs);
+        });
+        fileMenu.add(fileExtensionMenuItem);
         menuBar.add(fileMenu);
     }
 
 
     private void openViewer(SearchResult r) {
+        new FileContentViewer(viewerTabs, new File(r.getFilePath()), r.getLineNumber(),r.getLineCount());
 
-        new FileContentViewer(viewerTabs, new File(r.filePath()), r.lineNumber());
     }
 
     public static void loadFont() {
@@ -94,19 +104,17 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
             }
             Font inter = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(12f);
             UIManager.put("defaultFont", inter);
+
         } catch (Exception e) {
             logger.error("error", e);
         }
     }
 
     public static void main(String[] args) {
-
-
+        Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints");
         System.setProperty("flatlaf.useWindowDecorations", "false");
         FlatIntelliJLaf.setup();
-
         loadFont();
-
         SwingUtilities.invokeLater(() -> {
             try {
                 new Logster().setVisible(true);
@@ -165,17 +173,25 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
             return;
         }
 
+
         searchPanel.clearSearchResult();
         SearchProgressListener listener = this;
         new SwingWorker<>() {
-            protected String doInBackground() throws Exception {
-                SimpleFileSearch search = new SimpleFileSearch(Objects.requireNonNullElse(ConfigPanel.getConfig().ignoreFileExtensions(), new ArrayList<>()));
-                if (searchPanel.useDateForSearch()) {
-                    long start = searchPanel.getStartTime();
-                    long end = searchPanel.getEndTime();
-                    search.search(searchLocation, searchQuery, listener, controller, DateDetection.dateDetection, start, end);
-                } else {
-                    search.search(searchLocation, searchQuery, listener, controller, null, -1, -1);
+            protected String doInBackground()  {
+                try {
+                    Logger logger = LoggerFactory.getLogger(SwingWorker.class);
+                    SimpleFileSearch search = new SimpleFileSearch(AppConfiguration.ignoreFileExtension);
+                    if (searchPanel.useDateForSearch()) {
+                        long start = searchPanel.getStartTime();
+                        long end = searchPanel.getEndTime();
+                        logger.error("with date");
+                        search.search(searchLocation, searchQuery, listener, controller, DateDetection.dateDetection, start, end);
+                    } else {
+                        logger.error("without date");
+                        search.search(searchLocation, searchQuery, listener, controller, null, -1, -1);
+                    }
+                }catch (Exception e){
+                    logger.error("error ",e);
                 }
 
                 return "OK";
