@@ -1,10 +1,14 @@
 package com.logster;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.io.File;
+
+import static com.logster.ui.Icons.previewIcon;
 
 public class FileContentViewer extends ClosableTabPanel {
 
@@ -12,7 +16,7 @@ public class FileContentViewer extends ClosableTabPanel {
 
 
     public FileContentViewer(JTabbedPane tabbedPane, File file, int highlightLine) {
-        super(tabbedPane, file.getName());
+        super(tabbedPane, file.getName(),previewIcon );
 
         VirtualFileTableModel model = new VirtualFileTableModel(file, Math.max(highlightLine-2000,0), highlightLine+2000 );
         JTable table = new JTable(model);

@@ -5,61 +5,35 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.logster.config.ConfigPanel;
 import com.logster.search.*;
 import com.logster.test.TestPanel;
-import org.apache.logging.log4j.Level;
+import com.logster.ui.SearchPanel;
+import com.logster.ui.SearchPanelListener;
+import com.logster.ui.StatusBar;
 
-import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class Logster extends JFrame implements SearchProgressListener {
+public class Logster extends JFrame implements SearchProgressListener, SearchPanelListener {
 
     private static final Logger logger = LoggerFactory.getLogger(Logster.class);
 
-    private final JTextField searchBox = new JTextField(30);
-
-    private final SearchResultTM tableModel = new SearchResultTM(new ArrayList<>());
-    private final JTable resultTable = new JTable(tableModel);
-
-    private final DateField fromDateField = new DateField();
-    private final DateField toDateField = new DateField();
-
     private final JTabbedPane viewerTabs = new JTabbedPane();
-    private final JTextField locationTextBox = new JTextField();
 
-
-    final JButton searchBtn = new JButton("Search");
-    final JCheckBox useDate = new JCheckBox();
-
-    private final JLabel statusLabel = new JLabel();
     final SearchController controller = new SearchController();
 
-
-    private final JProgressBar progressBar = new JProgressBar();
-
-    private final Icon cancelIcon =new FlatSVGIcon("icons/cancel.svg", 16, 16);
-    private final Icon limitIcon =new FlatSVGIcon("icons/limit.svg", 16, 16);
-    private final Icon searchingIcon =new FlatSVGIcon("icons/searching.svg", 16, 16);
-    private final Icon thumbsUpIcon =new FlatSVGIcon("icons/thumbsUp.svg", 16, 16);
-    private final JLabel statusIconLabel = new JLabel(thumbsUpIcon);
-
-
-
+    final StatusBar statusBar = new StatusBar();
+    final SearchPanel searchPanel = new SearchPanel(viewerTabs);
 
 
     public void loadIcon() {
-
         try (InputStream is = Logster.class.getClassLoader().getResourceAsStream("icons/logo.png")) {
             if (is == null) {
                 throw new IllegalStateException("Font not found!");
@@ -67,7 +41,7 @@ public class Logster extends JFrame implements SearchProgressListener {
 
             setIconImage(ImageIO.read(is));
         } catch (Exception e) {
-            logger.error("error",e);
+            logger.error("error", e);
         }
     }
 
@@ -77,109 +51,36 @@ public class Logster extends JFrame implements SearchProgressListener {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1000, 700);
         loadIcon();
-
-
-        JButton openFolderBtn = new JButton("Select folder");
-        openFolderBtn.addActionListener((_) -> chooseFolder());
-        JPanel searchRow = Util.rows(searchBox, searchBtn, new JLabel("Use range"), useDate, fromDateField, toDateField);
-        JPanel folderPanel = Util.rows(locationTextBox, openFolderBtn);
-        JPanel topPanel = Util.columns(folderPanel, searchRow);
-
-        topPanel.add(searchRow);
-
-        resultTable.setAutoCreateRowSorter(true);
-        resultTable.getColumn(resultTable.getColumnName(1)).setCellRenderer(new SearchResultRenderer());
-
-        Util.setLineColWidth(resultTable);
-
-        JPanel searchPanel = new JPanel(new BorderLayout());
-        searchPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        searchPanel.add(new JScrollPane(resultTable), BorderLayout.CENTER);
-        searchPanel.add(topPanel, BorderLayout.NORTH);
-        viewerTabs.add(searchPanel, "Search");
-
-        viewerTabs.add(new ConfigPanel(),"Config");
-        viewerTabs.add(new TestPanel(),"Test");
-
+        searchPanel.setListener(this);
+        viewerTabs.add(new ConfigPanel(), "Config");
         add(viewerTabs, BorderLayout.CENTER);
+        statusBar.setOnSearchCancel(new Runnable() {
+            @Override
+            public void run() {
+                controller.cancel();
+                statusBar.setProgress(0);
+                statusBar.setState(StatusBar.State.SEARCH_CANCELLED);
 
-
-        JButton stopSearchBtn =new JButton("stop");
-        stopSearchBtn.addActionListener((_)->
-        {
-            controller.cancel();
-            statusLabel.setText("search cancelled");
-            progressBar.setValue(0);
-            statusIconLabel.setIcon(cancelIcon);
-            statusIconLabel.setToolTipText("Search cancelled");
-        });
-        JPanel progressPanel = Util.rows(statusIconLabel,statusLabel,progressBar,stopSearchBtn);
-        progressPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-
-        add(progressPanel, BorderLayout.SOUTH);
-
-
-        searchBtn.addActionListener(_ -> performSearch());
-        resultTable.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) {
-                int row = resultTable.getSelectedRow();
-                if (row != -1) {
-                    int modelRow = resultTable.convertRowIndexToModel(row);
-                    SearchResult searchResult = tableModel.getSearchResultAt(modelRow);
-                    if (evt.getClickCount() == 2) openViewer(searchResult);
-                }
             }
         });
-
-        LocalDateTime date = LocalDateTime.now();
-        fromDateField.setDate(date.plusMinutes(10));
-        toDateField.setDate(date);
-    }
-
-    private void chooseFolder() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int res = chooser.showOpenDialog(this);
-        if (res == JFileChooser.APPROVE_OPTION) {
-            File selectedFolder = chooser.getSelectedFile();
-            locationTextBox.setText(selectedFolder.getAbsolutePath());
-
-        }
-    }
-
-
-    private void performSearch() {
-        controller.reset();
-
-        if (searchBox.getText() == null || locationTextBox.getText() == null || searchBox.getText().isBlank() || locationTextBox.getText().isBlank()) {
-            return;
-        }
-        tableModel.clear();
-        SearchProgressListener listener = this;
-        new SwingWorker<>() {
-            protected String doInBackground() throws Exception {
-
-                SimpleFileSearch search = new SimpleFileSearch(Objects.requireNonNullElse(ConfigPanel.getConfig().ignoreFileExtensions(),new ArrayList<>()));
-                if(useDate.isSelected()){
-                    long start= Util.toEpochMilli(fromDateField.getDate());
-                    long end = Util.toEpochMilli(toDateField.getDate());
-                    search.search(locationTextBox.getText(), searchBox.getText(), listener,controller, DateDetection.dateDetection,start,end);
-
-                }else{
-
-                    search.search(locationTextBox.getText(), searchBox.getText(), listener,controller,null,-1,-1);
-
-                }
-
-                return "OK";
-            }
-
-        }.execute();
-
+        add(statusBar, BorderLayout.SOUTH);
+        setMenuBar();
 
     }
+
+
+    public void setMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+        JMenu fileMenu = new JMenu("File");
+        JMenuItem testMenuItem = new JMenuItem("Text Regex", new FlatSVGIcon("icons/lab.svg", 16, 16));
+        testMenuItem.addActionListener((_) -> {
+            new TestPanel(viewerTabs);
+        });
+        fileMenu.add(testMenuItem);
+        menuBar.add(fileMenu);
+    }
+
 
     private void openViewer(SearchResult r) {
 
@@ -194,13 +95,13 @@ public class Logster extends JFrame implements SearchProgressListener {
             Font inter = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(12f);
             UIManager.put("defaultFont", inter);
         } catch (Exception e) {
-            logger.error("error",e);
+            logger.error("error", e);
         }
     }
 
     public static void main(String[] args) {
 
-        Configurator.setLevel("com.logster", Level.ERROR);
+
         System.setProperty("flatlaf.useWindowDecorations", "false");
         FlatIntelliJLaf.setup();
 
@@ -217,43 +118,75 @@ public class Logster extends JFrame implements SearchProgressListener {
 
 
     @Override
-    public void onResultFound(SearchResult result,int noOfFiles,int processedFiles) {
+    public void onResultFound(SearchResult result, int noOfFiles, int processedFiles) {
         SwingUtilities.invokeLater(() -> {
-                tableModel.addSearchResult(result);
-                int y =processedFiles+1;
-                float progress = ((float) y / (float) noOfFiles) * 100;
-                progressBar.setValue((int) Math.floor(progress));
-                statusLabel.setText(String.format("%d results ,%d of %d files ,searching....", tableModel.getRowCount(), y, noOfFiles));
+            searchPanel.addSearchResult(result);
+            int y = processedFiles + 1;
+            float progress = ((float) y / (float) noOfFiles) * 100;
+            statusBar.setProgress((int) Math.floor(progress));
+            String message = String.format("%d results ,%d of %d files ,searching....", searchPanel.getRowCount(), y, noOfFiles);
+            statusBar.setStatus(message);
+
         });
 
     }
 
     @Override
     public void onSearchStarted() {
-        resultTable.clearSelection();
-        statusLabel.setText("collecting file information..");
-        progressBar.setValue(0);
-        statusIconLabel.setIcon(searchingIcon);
-        statusIconLabel.setToolTipText("Searching files");
+        searchPanel.clearSearchResult();
+        statusBar.setStatus("collecting file information..");
+        statusBar.setProgress(0);
+        statusBar.setState(StatusBar.State.IN_PROGRESS);
+
     }
 
     @Override
     public void onSearchCompleted(long timeTakenInSeconds) {
         SwingUtilities.invokeLater(() -> {
-                progressBar.setValue(100);
-                statusLabel.setText(String.format("%d results in %d seconds", tableModel.getRowCount(), timeTakenInSeconds));
-            statusIconLabel.setIcon(thumbsUpIcon);
-            statusIconLabel.setToolTipText("Search finished");
+            statusBar.setProgress(100);
+            statusBar.setStatus(String.format("%d results in %d seconds", searchPanel.getRowCount(), timeTakenInSeconds));
+            statusBar.setState(StatusBar.State.SEARCH_COMPLETED);
         });
-
     }
-
 
 
     @Override
     public void onMaxLimit(int limit) {
-        statusIconLabel.setIcon(limitIcon);
-        statusIconLabel.setToolTipText("Search limit reached");
+        statusBar.setState(StatusBar.State.MAX_SEARCH_RESULT);
+        statusBar.setStatus("Search limit reached");
+    }
 
+    @Override
+    public void onSearchBtnClick() {
+        controller.reset();
+        String searchQuery = searchPanel.getSearchQuery();
+        String searchLocation = searchPanel.getSearchTLocation();
+        if (searchQuery.isEmpty() || searchLocation.isEmpty()) {
+            return;
+        }
+
+        searchPanel.clearSearchResult();
+        SearchProgressListener listener = this;
+        new SwingWorker<>() {
+            protected String doInBackground() throws Exception {
+                SimpleFileSearch search = new SimpleFileSearch(Objects.requireNonNullElse(ConfigPanel.getConfig().ignoreFileExtensions(), new ArrayList<>()));
+                if (searchPanel.useDateForSearch()) {
+                    long start = searchPanel.getStartTime();
+                    long end = searchPanel.getEndTime();
+                    search.search(searchLocation, searchQuery, listener, controller, DateDetection.dateDetection, start, end);
+                } else {
+                    search.search(searchLocation, searchQuery, listener, controller, null, -1, -1);
+                }
+
+                return "OK";
+            }
+
+        }.execute();
+
+    }
+
+    @Override
+    public void onRowClick(SearchResult searchResult) {
+        openViewer(searchResult);
     }
 }

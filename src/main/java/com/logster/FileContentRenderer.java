@@ -18,28 +18,25 @@ class FileContentRenderer extends DefaultTableCellRenderer {
             JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        if(isSelected){
+            c.setBackground( table.getSelectionBackground());
+            c.setForeground(table.getSelectionForeground());
+        }else {
 
-        int modelRow = table.convertRowIndexToModel(row);
-        int lineNumber = (int) table.getModel().getValueAt(modelRow, 0);
+            int modelRow = table.convertRowIndexToModel(row);
+            int lineNumber = (int) table.getModel().getValueAt(modelRow, 0);
 
-        if (lineNumber == highlightLine) {
-            c.setBackground(Color.YELLOW); // highlight color
-            c.setForeground(Color.BLACK);
-        } else {
-            // Respect selection coloring
-            if (isSelected) {
-                c.setBackground( table.getSelectionBackground());
-                c.setForeground(table.getSelectionForeground());
+            if (lineNumber == highlightLine) {
+                c.setBackground(Color.YELLOW); // highlight color
+                c.setForeground(Color.BLACK);
             } else {
-                c.setBackground( table.getBackground());
-                c.setForeground(table.getForeground());
+                // Respect selection coloring
+
+                    c.setBackground(column == 0 ? lineColor : table.getBackground());
+                    c.setForeground(table.getForeground());
+
             }
         }
-        if(column==0){
-            c.setBackground(lineColor);
-        }
-
-
         return c;
     }
 }

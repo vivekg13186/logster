@@ -29,21 +29,45 @@ public class Util {
         table.getColumnModel().getColumn(0).setMaxWidth(colWidth);
     }
 
+    public static void setWidth(JComponent c,int width){
+        Dimension dimension = c.getPreferredSize();
+        dimension.setSize(width,dimension.getHeight());
+        c.setPreferredSize(dimension);
+    }
     public static void setTableRenderer(JTable table, TableCellRenderer cellRenderer){
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
     }
 
-    public static JPanel columns(JComponent... components){
+    public static JPanel formField(String label,JComponent component){
+        JPanel panel=  new JPanel();
+        BoxLayout layout =new BoxLayout(panel,BoxLayout.Y_AXIS);
+        panel.setLayout(layout);
+        panel.add(new JLabel(label));
+            if (component instanceof JTextField) {
+                component.setMaximumSize(component.getPreferredSize());
+            }
+            panel.add(component);
+            component.setAlignmentY(Component.CENTER_ALIGNMENT);
+            component.setAlignmentX(Component.LEFT_ALIGNMENT);
+            panel.add(Box.createRigidArea(new Dimension(0, 5)));
+        return panel;
+    }
+
+
+    public static JPanel columns(int spacing,JComponent... components){
         JPanel panel=  new JPanel();
         BoxLayout layout =new BoxLayout(panel,BoxLayout.Y_AXIS);
         panel.setLayout(layout);
         for (JComponent component : components) {
+            if (component instanceof JTextField) {
+                component.setMaximumSize(component.getPreferredSize());
+            }
             panel.add(component);
             component.setAlignmentY(Component.CENTER_ALIGNMENT);
             component.setAlignmentX(Component.LEFT_ALIGNMENT);
-            panel.add(Box.createRigidArea(new Dimension(0, 10)));
+            panel.add(Box.createRigidArea(new Dimension(0, spacing)));
         }
 
         return panel;
@@ -53,11 +77,15 @@ public class Util {
         BoxLayout layout =new BoxLayout(panel,BoxLayout.X_AXIS);
         panel.setLayout(layout);
         for (JComponent component : components) {
+            if (component instanceof JTextField) {
+                component.setMaximumSize(component.getPreferredSize());
+            }
             component.setAlignmentY(Component.CENTER_ALIGNMENT);
             component.setAlignmentX(Component.LEFT_ALIGNMENT);
             panel.add(component);
             panel.add(Box.createRigidArea(new Dimension(10, 0)));
         }
+
 
         return panel;
     }

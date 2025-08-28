@@ -1,10 +1,10 @@
 package com.logster.test;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.logster.ClosableTabPanel;
 import com.logster.Util;
-import com.logster.search.MatchPosition;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -13,19 +13,33 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static com.logster.Util.*;
+import static com.logster.ui.Icons.labIcon;
 
-public class TestPanel extends JPanel
+public class TestPanel extends ClosableTabPanel
 {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    DateTimeFormatter standardFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    JTextField datePattern  =new JTextField("EEE MMM d HH:mm:ss yyyy",100);
+    JTextField convertedDateValue = new JTextField(100);
+    JTextField matchedDateString = new JTextField(100);
+    JButton gen=new JButton("Test");
+    JTextField input = new JTextField(" [Sun Dec 04 07:11:05 2005] [notice] workerEnv.init() ok",100);
+    JTextField regExp =new JTextField("\\[(\\w\\w\\w \\w\\w\\w \\d\\d \\d\\d:\\d\\d:\\d\\d \\d\\d\\d\\d)\\]",100);
+
     JTextPane textPane = new JTextPane();
-    public TestPanel(){
-        JTextArea regExp =new JTextArea("\\[(\\w\\w\\w \\w\\w\\w \\d\\d \\d\\d:\\d\\d:\\d\\d \\d\\d\\d\\d)\\]");
 
 
-        JTextArea datePattern  =new JTextArea("EEE MMM d HH:mm:ss yyyy");
-        JLabel result = new JLabel();
-        JButton gen=new JButton("Test");
-        JTextArea input = new JTextArea(" [Sun Dec 04 07:11:05 2005] [notice] workerEnv.init() ok /etc/httpd/conf/workers2.properties");
+    public TestPanel(JTabbedPane tabbedPane ){
+        super(  tabbedPane,  "Test",labIcon);
+        convertedDateValue.setEditable(false);
+        matchedDateString.setEditable(false);
+        FontMetrics met = textPane.getFontMetrics(textPane.getFont());
+        textPane.setPreferredSize(new Dimension(met.charWidth('m')*101, met.getHeight() + 7));
+        textPane.setMaximumSize(textPane.getPreferredSize());
+        textPane.setEditable(false);
+
+textPane.setBorder(BorderFactory.createLineBorder(Color.lightGray,1));
+
         gen.addActionListener((_)->{
             try{
                 Pattern pattern = Pattern.compile(datePattern.getText());
@@ -34,24 +48,28 @@ public class TestPanel extends JPanel
                 if(matcher.find()){
                     String datePart  = matcher.group();
                     LocalDateTime myDate = LocalDateTime.parse(datePart, dateTimeFormatter);
-                    result.setText(myDate.format(formatter));
+                    convertedDateValue.setText(myDate.format(standardFormat));
                 }
 
             } catch (Exception e) {
-                 result.setText(e.getMessage());
+                 convertedDateValue.setText(e.getMessage());
             }
         });
 
 
-        JPanel panel = Util.columns(
-                Util.rows(
-                        Util.columns(new JLabel("Input text"),input),
-                        Util.columns(new JLabel("Match"),textPane)
-                        ),
-                Util.columns(new JLabel("Regular Expression"),regExp),
-        Util.columns(new JLabel("Data Format"),datePattern),
-        Util.rows(result,gen));
-        Util.padding(panel,10);
+        JPanel panel =
+                columns(15,
+                        formField("Enter input text",input),
+                        formField("Text highlighted by regular expression",textPane),
+                        formField("Date string matched by regular expression",matchedDateString),
+                        formField("Date value parsed from string",convertedDateValue),
+                        formField("Enter regular expression to highlight text",regExp),
+                        formField("Enter date format to parse string",datePattern)
+
+                        );
+
+
+          Util.padding(panel,10);
         setLayout(new BorderLayout());
         add(panel, BorderLayout.CENTER);
 
@@ -74,6 +92,8 @@ public class TestPanel extends JPanel
                     if(matcher.find()){
                         textPane.setText(input.getText());
                         highlight(matcher.start(),matcher.end());
+                        String dateString  = matcher.group(1);
+                        matchedDateString.setText(dateString);
                     }else{
                         textPane.setText("no");
                     }}catch (Exception eee){
@@ -95,19 +115,12 @@ public class TestPanel extends JPanel
             @Override
             public void keyReleased(KeyEvent e) {
                 try{
-                    Pattern pattern = Pattern.compile(regExp.getText());
-                    Matcher matcher=pattern.matcher(input.getText());
-                    if(matcher.find()){
-                        String dateString  = matcher.group(1);
-                        result.setText("Date String "+dateString);
+                        String dateString  = matchedDateString.getText();
                         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(datePattern.getText());
                         LocalDateTime myDate = LocalDateTime.parse(dateString, dateTimeFormatter);
-                        result.setText("Date String "+dateString +" Formatted date "+myDate.format(formatter));
+                        convertedDateValue.setText( myDate.format(standardFormat));
+                    }catch (Exception _){
 
-                    }else{
-                        result.setText("no");
-                    }}catch (Exception eee){
-                    result.setText(eee.getMessage());
                 }
             }
         });
