@@ -1,9 +1,10 @@
 package com.logster;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.extras.FlatSVGIcon;
+
 import com.logster.config.AppConfiguration;
-import com.logster.config.ConfigPanel;
+
+import com.logster.config.DateFormatPanel;
 import com.logster.config.IgnoreFileExtensionPanel;
 import com.logster.search.*;
 import com.logster.test.TestPanel;
@@ -21,11 +22,9 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Objects;
 
-import static com.logster.ui.Icons.extensionIcon;
-import static com.logster.ui.Icons.labIcon;
+
+import static com.logster.ui.Icons.*;
 
 public class Logster extends JFrame implements SearchProgressListener, SearchPanelListener {
 
@@ -88,6 +87,13 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
             new IgnoreFileExtensionPanel(viewerTabs);
         });
         fileMenu.add(fileExtensionMenuItem);
+
+        JMenuItem dateFormatMenuItem = new JMenuItem("Add date formats",dateIcon);
+        dateFormatMenuItem.addActionListener((_) -> {
+            new DateFormatPanel(viewerTabs);
+        });
+        fileMenu.add(dateFormatMenuItem);
+
         menuBar.add(fileMenu);
     }
 

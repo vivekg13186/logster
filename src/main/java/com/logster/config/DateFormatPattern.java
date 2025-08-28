@@ -1,4 +1,7 @@
 package com.logster.config;
 
-public record DateFormatPattern(String regExp, String dateFormat) {
+import java.time.format.DateTimeFormatter;
+import java.util.regex.Pattern;
+
+public record DateFormatPattern(Pattern regExp, DateTimeFormatter dateFormat) {
 }

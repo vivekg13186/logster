@@ -15,4 +15,5 @@ public class Icons {
     public static final FlatSVGIcon openFolderIcon = new FlatSVGIcon("icons/openFolder.svg",16,16);
     public static final FlatSVGIcon stopIcon = new FlatSVGIcon("icons/stop.svg",16,16);
     public static final FlatSVGIcon extensionIcon = new FlatSVGIcon("icons/extension.svg",16,16);
+    public static final FlatSVGIcon dateIcon = new FlatSVGIcon("icons/date.svg",16,16);
 }
