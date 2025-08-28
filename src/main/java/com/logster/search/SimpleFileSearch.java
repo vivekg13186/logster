@@ -144,7 +144,7 @@ public class SimpleFileSearch {
 
     private boolean isIgnored(Path path) {
         for (String ignore : ignoreExtension) {
-            if (path.toString().contains(ignore)) {
+            if (path.toString().endsWith(ignore)) {
                 return true;
             }
         }
