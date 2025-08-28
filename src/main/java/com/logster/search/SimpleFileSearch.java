@@ -1,6 +1,5 @@
 package com.logster.search;
 
-import com.logster.Logster;
 import com.logster.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -88,7 +86,7 @@ public class SimpleFileSearch {
                         listener.onResultFound(r,allFiles, finalI);
                     } else {
                         controller.cancel();
-                        listener.onMaxLimit(maxResults);
+                        listener.onMaxLimit();
                         break;
                     }
                 }

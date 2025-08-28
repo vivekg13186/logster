@@ -27,7 +27,7 @@ public class SearchPanel extends IconTabPanel {
     private final JTextField locationTextBox = new JTextField( "C:\\Users\\vivek\\Downloads\\HDFS_v1",30);
     final JButton searchBtn = new JButton(searchIcon);
     final JCheckBox useDate = new JCheckBox();
-    JButton openFolderBtn = new JButton(openFolderIcon);
+    final JButton openFolderBtn = new JButton(openFolderIcon);
     private final JTextField searchBox = new JTextField("error",30);
     private SearchPanelListener listener;
     public SearchPanel(JTabbedPane tabbedPane) {
@@ -59,7 +59,7 @@ public class SearchPanel extends IconTabPanel {
                 }
             }
         });
-        searchBtn.addActionListener((_)->{listener.onSearchBtnClick();});
+        searchBtn.addActionListener((_)-> listener.onSearchBtnClick());
     }
 
     private void chooseFolder() {

@@ -4,11 +4,7 @@ import com.logster.config.AppConfiguration;
 import com.logster.config.DateFormatPattern;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class DateDetection  {
@@ -31,8 +27,8 @@ public class DateDetection  {
                      System.out.println(datePart);
                      return LocalDateTime.parse(datePart, dateFormat.dateFormat());
                  }
-            }catch (Exception e){
-                e.printStackTrace();
+            }catch (Exception _){
+
             }
         }
 

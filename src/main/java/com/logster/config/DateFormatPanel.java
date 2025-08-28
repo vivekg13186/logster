@@ -16,8 +16,8 @@ import static com.logster.ui.Icons.dateIcon;
 
 
 public class DateFormatPanel extends ClosableTabPanel {
-    JTextArea textArea =new JTextArea();
-    Preferences preferences  = Preferences.userNodeForPackage(DateFormatPattern.class);
+    final JTextArea textArea =new JTextArea();
+    final Preferences preferences  = Preferences.userNodeForPackage(DateFormatPattern.class);
     public DateFormatPanel(JTabbedPane tabbedPane ) {
         super(tabbedPane, "Date formats", dateIcon);
         setLayout(new BorderLayout());

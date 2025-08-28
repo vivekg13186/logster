@@ -20,7 +20,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 
 
@@ -49,7 +48,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
         }
     }
 
-    public Logster() throws IOException {
+    public Logster() {
         super("Logster");
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -58,14 +57,11 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
         searchPanel.setListener(this);
 
         add(viewerTabs, BorderLayout.CENTER);
-        statusBar.setOnSearchCancel(new Runnable() {
-            @Override
-            public void run() {
-                controller.cancel();
-                statusBar.setProgress(0);
-                statusBar.setState(StatusBar.State.SEARCH_CANCELLED);
+        statusBar.setOnSearchCancel(() -> {
+            controller.cancel();
+            statusBar.setProgress(0);
+            statusBar.setState(StatusBar.State.SEARCH_CANCELLED);
 
-            }
         });
         add(statusBar, BorderLayout.SOUTH);
         setMenuBar();
@@ -78,20 +74,14 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
         setJMenuBar(menuBar);
         JMenu fileMenu = new JMenu("File");
         JMenuItem testMenuItem = new JMenuItem("Text Regex", labIcon);
-        testMenuItem.addActionListener((_) -> {
-            new TestPanel(viewerTabs);
-        });
+        testMenuItem.addActionListener((_) -> new TestPanel(viewerTabs));
         fileMenu.add(testMenuItem);
         JMenuItem fileExtensionMenuItem = new JMenuItem("Exclude File Types",extensionIcon);
-        fileExtensionMenuItem.addActionListener((_) -> {
-            new IgnoreFileExtensionPanel(viewerTabs);
-        });
+        fileExtensionMenuItem.addActionListener((_) -> new IgnoreFileExtensionPanel(viewerTabs));
         fileMenu.add(fileExtensionMenuItem);
 
         JMenuItem dateFormatMenuItem = new JMenuItem("Add date formats",dateIcon);
-        dateFormatMenuItem.addActionListener((_) -> {
-            new DateFormatPanel(viewerTabs);
-        });
+        dateFormatMenuItem.addActionListener((_) -> new DateFormatPanel(viewerTabs));
         fileMenu.add(dateFormatMenuItem);
 
         menuBar.add(fileMenu);
@@ -99,7 +89,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
 
 
     private void openViewer(SearchResult r) {
-        new FileContentViewer(viewerTabs, new File(r.getFilePath()), r.getLineNumber(),r.getLineCount());
+        new FileContentViewer(viewerTabs, new File(r.getFilePath()), r.getLineNumber());
 
     }
 
@@ -121,13 +111,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
         System.setProperty("flatlaf.useWindowDecorations", "false");
         FlatIntelliJLaf.setup();
         loadFont();
-        SwingUtilities.invokeLater(() -> {
-            try {
-                new Logster().setVisible(true);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        SwingUtilities.invokeLater(() -> new Logster().setVisible(true));
     }
 
 
@@ -165,7 +149,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
 
 
     @Override
-    public void onMaxLimit(int limit) {
+    public void onMaxLimit() {
         statusBar.setState(StatusBar.State.MAX_SEARCH_RESULT);
         statusBar.setStatus("Search limit reached");
     }

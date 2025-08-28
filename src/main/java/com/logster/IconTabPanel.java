@@ -1,11 +1,5 @@
 package com.logster;
 
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-
-import javax.swing.*;
-import java.awt.*;
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-
 
 import javax.swing.*;
 import java.awt.*;

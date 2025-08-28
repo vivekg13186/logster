@@ -4,24 +4,12 @@ import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 public class Util {
 
 
-    public static String readResource(String name) throws IOException {
-        try (InputStream is = Util.class.getClassLoader().getResourceAsStream(name)) {
-            if (is == null) {
-                throw new FileNotFoundException("Resource not found: " + name);
-            }
-            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        }
-    }
     public static void setLineColWidth(JTable table){
         int charWidth = table.getFontMetrics(table.getFont()).charWidth('0'); // width of a single char
         int colWidth = charWidth * 7; // 10 characters
@@ -30,11 +18,6 @@ public class Util {
         table.getColumnModel().getColumn(0).setMaxWidth(colWidth);
     }
 
-    public static void setWidth(JComponent c,int width){
-        Dimension dimension = c.getPreferredSize();
-        dimension.setSize(width,dimension.getHeight());
-        c.setPreferredSize(dimension);
-    }
     public static void setTableRenderer(JTable table, TableCellRenderer cellRenderer){
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);

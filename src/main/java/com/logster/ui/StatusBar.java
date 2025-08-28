@@ -1,8 +1,5 @@
 package com.logster.ui;
 
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-import com.logster.Util;
-
 import javax.swing.*;
 
 import java.awt.*;
@@ -19,7 +16,6 @@ public class StatusBar extends JPanel {
 
     private final JLabel statusIconLabel = new JLabel(thumbsUpIcon);
     private final JProgressBar progressBar = new JProgressBar();
-    private final  JButton stopSearchBtn =new JButton(stopIcon);
     private Runnable onSearchCancel=null;
 
     public  enum State{
@@ -31,7 +27,8 @@ public class StatusBar extends JPanel {
     public StatusBar(){
 
         setLayout(new BorderLayout());
-        add(rows(statusIconLabel,statusLabel,progressBar,stopSearchBtn),BorderLayout.CENTER);
+        JButton stopSearchBtn = new JButton(stopIcon);
+        add(rows(statusIconLabel,statusLabel,progressBar, stopSearchBtn),BorderLayout.CENTER);
         padding(this,5);
         stopSearchBtn.addActionListener((_)->{
             if(onSearchCancel!=null)onSearchCancel.run();

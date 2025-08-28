@@ -1,6 +1,5 @@
 package com.logster.test;
 
-import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.logster.ClosableTabPanel;
 import com.logster.Util;
 
@@ -18,15 +17,15 @@ import static com.logster.ui.Icons.labIcon;
 
 public class TestPanel extends ClosableTabPanel
 {
-    DateTimeFormatter standardFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    JTextField datePattern  =new JTextField("EEE MMM d HH:mm:ss yyyy",100);
-    JTextField convertedDateValue = new JTextField(100);
-    JTextField matchedDateString = new JTextField(100);
-    JButton gen=new JButton("Test");
-    JTextField input = new JTextField(" [Sun Dec 04 07:11:05 2005] [notice] workerEnv.init() ok",100);
-    JTextField regExp =new JTextField("\\[(\\w\\w\\w \\w\\w\\w \\d\\d \\d\\d:\\d\\d:\\d\\d \\d\\d\\d\\d)\\]",100);
+    final DateTimeFormatter standardFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    final JTextField datePattern  =new JTextField("EEE MMM d HH:mm:ss yyyy",100);
+    final JTextField convertedDateValue = new JTextField(100);
+    final JTextField matchedDateString = new JTextField(100);
+    final JButton gen=new JButton("Test");
+    final JTextField input = new JTextField(" [Sun Dec 04 07:11:05 2005] [notice] workerEnv.init() ok",100);
+    final JTextField regExp =new JTextField("\\[(\\w\\w\\w \\w\\w\\w \\d\\d \\d\\d:\\d\\d:\\d\\d \\d\\d\\d\\d)\\]",100);
 
-    JTextPane textPane = new JTextPane();
+    final JTextPane textPane = new JTextPane();
 
 
     public TestPanel(JTabbedPane tabbedPane ){

@@ -6,6 +6,6 @@ public interface SearchProgressListener {
     void onSearchCompleted(long timeTakenInSeconds);
 
 
-    void onMaxLimit(int limit);
+    void onMaxLimit();
 
 }

@@ -15,7 +15,7 @@ import static com.logster.Util.padding;
 import static com.logster.ui.Icons.extensionIcon;
 
 public class IgnoreFileExtensionPanel extends ClosableTabPanel {
-    Preferences preferences  = Preferences.userNodeForPackage(IgnoreFileExtensionPanel.class);
+    final Preferences preferences  = Preferences.userNodeForPackage(IgnoreFileExtensionPanel.class);
     public IgnoreFileExtensionPanel(JTabbedPane tabbedPane ) {
         super(tabbedPane, "Exclude File Types", extensionIcon);
         setLayout(new BorderLayout());

@@ -2,7 +2,6 @@ package com.logster.search;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.text.*;
 import java.awt.*;
 
