@@ -14,7 +14,7 @@ public class SearchResultRenderer extends DefaultTableCellRenderer {
 
         if(value instanceof SearchResult searchResult){
             if(isSelected)return c;
-            return createHighlightedTextPane(searchResult.getLineContent(), searchResult.getMatchPositions());
+            return createHighlightedTextPane(searchResult.lineContent(), searchResult.matchPositions());
         }
         if(!isSelected&& column==0){
                 c.setBackground(lineColor);

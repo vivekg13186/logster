@@ -89,7 +89,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
 
 
     private void openViewer(SearchResult r) {
-        new FileContentViewer(viewerTabs, new File(r.getFilePath()), r.getLineNumber());
+        new FileContentViewer(viewerTabs, new File(r.filePath()), r.lineNumber());
 
     }
 

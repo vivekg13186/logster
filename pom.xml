@@ -6,7 +6,7 @@
 
     <groupId>logster</groupId>
     <artifactId>logster</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.0</version>
 
     <properties>
         <maven.compiler.source>23</maven.compiler.source>
@@ -18,6 +18,7 @@
         <main.class>com.logster.Logster</main.class>
     </properties>
     <build>
+        <finalName>logster</finalName>
         <plugins>
             <!-- Compiler plugin -->
             <plugin>
@@ -28,11 +29,38 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
-            <!-- Dependency plugin: copy all runtime jars into lib -->
+ <!-- Copy main jar and extra scripts -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-main-jar-and-scripts</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <!-- Copy main jar -->
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                      todir="${project.build.directory}/dist" />
+
+                                <!-- Copy command and shell scripts -->
+                                <copy file="${basedir}/scripts/logster.bat"
+                                      todir="${project.build.directory}/dist" />
+                                <copy file="${basedir}/scripts/logster.sh"
+                                      todir="${project.build.directory}/dist" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.1</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -41,30 +69,9 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/dependency-jars</outputDirectory>
+                            <outputDirectory>${project.build.directory}/dist/lib</outputDirectory>
                             <includeScope>runtime</includeScope>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Assembly plugin: create zip with app jar + lib -->
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.6.0</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/assembly/bin.xml</descriptor>
-                    </descriptors>
-                    <finalName>${project.artifactId}</finalName>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -83,18 +90,8 @@
     </dependencyManagement>
 <dependencies>
 
-    <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-    <dependency>
-        <groupId>com.google.code.gson</groupId>
-        <artifactId>gson</artifactId>
-        <version>2.13.1</version>
-    </dependency>
 
-    <dependency>
-        <groupId>com.fifesoft</groupId>
-        <artifactId>rsyntaxtextarea</artifactId>
-        <version>3.6.0</version>
-    </dependency>
+
     <dependency>
         <groupId>com.formdev</groupId>
         <artifactId>flatlaf-extras</artifactId>

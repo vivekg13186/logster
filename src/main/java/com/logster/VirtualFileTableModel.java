@@ -51,7 +51,12 @@ public class VirtualFileTableModel extends AbstractTableModel {
             String line;
             while ((line = br.readLine()) != null) {
                 if (currentLine >= startLineNumber && currentLine <= endLineNumber) {
-                    lines.add(line.substring(0,500));
+                    if(line.length()>500){
+                        lines.add(line.substring(0,500));
+                    }else {
+                        lines.add(line);
+                    }
+
                 }
                 if (currentLine > endLineNumber) break;
                 currentLine++;

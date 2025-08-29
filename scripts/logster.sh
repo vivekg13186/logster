@@ -1,0 +1,1 @@
+java -cp "logster.jar:lib/*" com.logster.Logster

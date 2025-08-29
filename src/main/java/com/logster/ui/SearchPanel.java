@@ -24,11 +24,11 @@ public class SearchPanel extends IconTabPanel {
     private final DateField fromDateField = new DateField();
     private final DateField toDateField = new DateField();
 
-    private final JTextField locationTextBox = new JTextField( "C:\\Users\\vivek\\Downloads\\HDFS_v1",30);
+    private final JTextField locationTextBox = new JTextField(  30);
     final JButton searchBtn = new JButton(searchIcon);
     final JCheckBox useDate = new JCheckBox();
     final JButton openFolderBtn = new JButton(openFolderIcon);
-    private final JTextField searchBox = new JTextField("error",30);
+    private final JTextField searchBox = new JTextField( 30);
     private SearchPanelListener listener;
     public SearchPanel(JTabbedPane tabbedPane) {
         super(tabbedPane, "Search", searchIcon);
