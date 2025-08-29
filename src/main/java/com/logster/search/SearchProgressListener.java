@@ -1,7 +1,7 @@
 package com.logster.search;
 
 public interface SearchProgressListener {
-    void onResultFound(SearchResult result,int noOfFiles,int processedFile);
+    void onResultFound(SearchResult result);
     void onSearchStarted();
     void onSearchCompleted(long timeTakenInSeconds);
 

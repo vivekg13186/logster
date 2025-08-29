@@ -101,7 +101,7 @@ public class SimpleFileSearch {
                 }
                 int count = resultCount.incrementAndGet();
                 if (count <= getMaxResult()) {
-                    listener.onResultFound(r,1, 1);
+                    listener.onResultFound(r);
                 } else {
                     controller.cancel();
                     listener.onMaxLimit();

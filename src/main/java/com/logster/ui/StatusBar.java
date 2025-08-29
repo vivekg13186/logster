@@ -23,7 +23,7 @@ public class StatusBar extends JPanel {
         IN_PROGRESS,
         MAX_SEARCH_RESULT,
         SEARCH_COMPLETED
-    }       JButton stopSearchBtn = new JButton(stopIcon);
+    }       final JButton stopSearchBtn = new JButton(stopIcon);
     public StatusBar(){
 
         setLayout(new BorderLayout());

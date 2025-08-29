@@ -116,7 +116,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
 
 
     @Override
-    public void onResultFound(SearchResult result, int noOfFiles, int processedFiles) {
+    public void onResultFound(SearchResult result ) {
         SwingUtilities.invokeLater(() -> {
             searchPanel.addSearchResult(result);
 
@@ -164,7 +164,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
         new SwingWorker<>() {
             protected String doInBackground()  {
                 try {
-                    Logger logger = LoggerFactory.getLogger(SwingWorker.class);
+
                     SimpleFileSearch search = new SimpleFileSearch(AppConfiguration.ignoreFileExtension);
                     if (searchPanel.useDateForSearch()) {
                         long start = searchPanel.getStartTime();
