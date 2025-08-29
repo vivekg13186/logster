@@ -21,7 +21,7 @@ public class TestPanel extends ClosableTabPanel
     final JTextField datePattern  =new JTextField("EEE MMM d HH:mm:ss yyyy",100);
     final JTextField convertedDateValue = new JTextField(100);
     final JTextField matchedDateString = new JTextField(100);
-    final JButton gen=new JButton("Test");
+
     final JTextField input = new JTextField(" [Sun Dec 04 07:11:05 2005] [notice] workerEnv.init() ok",100);
     final JTextField regExp =new JTextField("\\[(\\w\\w\\w \\w\\w\\w \\d\\d \\d\\d:\\d\\d:\\d\\d \\d\\d\\d\\d)\\]",100);
 
@@ -39,21 +39,7 @@ public class TestPanel extends ClosableTabPanel
 
 textPane.setBorder(BorderFactory.createLineBorder(Color.lightGray,1));
 
-        gen.addActionListener((_)->{
-            try{
-                Pattern pattern = Pattern.compile(datePattern.getText());
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(datePattern.getText());
-                Matcher matcher = pattern.matcher(input.getText());
-                if(matcher.find()){
-                    String datePart  = matcher.group();
-                    LocalDateTime myDate = LocalDateTime.parse(datePart, dateTimeFormatter);
-                    convertedDateValue.setText(myDate.format(standardFormat));
-                }
 
-            } catch (Exception e) {
-                 convertedDateValue.setText(e.getMessage());
-            }
-        });
 
 
         JPanel panel =
@@ -86,6 +72,7 @@ textPane.setBorder(BorderFactory.createLineBorder(Color.lightGray,1));
             @Override
             public void keyReleased(KeyEvent e) {
                 try{
+                    matchedDateString.setText("");
                     Pattern pattern = Pattern.compile(regExp.getText());
                     Matcher matcher=pattern.matcher(input.getText());
                     if(matcher.find()){
@@ -93,10 +80,8 @@ textPane.setBorder(BorderFactory.createLineBorder(Color.lightGray,1));
                         highlight(matcher.start(),matcher.end());
                         String dateString  = matcher.group(1);
                         matchedDateString.setText(dateString);
-                    }else{
-                        textPane.setText("no");
-                    }}catch (Exception eee){
-                    textPane.setText(eee.getMessage());
+                    } }catch (Exception _){
+
                 }
             }
         });
@@ -113,7 +98,7 @@ textPane.setBorder(BorderFactory.createLineBorder(Color.lightGray,1));
 
             @Override
             public void keyReleased(KeyEvent e) {
-                try{
+                try{   convertedDateValue.setText("");
                         String dateString  = matchedDateString.getText();
                         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(datePattern.getText());
                         LocalDateTime myDate = LocalDateTime.parse(dateString, dateTimeFormatter);

@@ -24,7 +24,6 @@ public class DateDetection  {
                 Matcher matcher = dateFormat.regExp().matcher(line);
                  if(matcher.find()){
                      String datePart  = matcher.group(1);
-                     System.out.println(datePart);
                      return LocalDateTime.parse(datePart, dateFormat.dateFormat());
                  }
             }catch (Exception _){

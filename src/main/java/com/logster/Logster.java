@@ -131,7 +131,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
     public void onSearchStarted() {
         searchPanel.clearSearchResult();
         statusBar.setState(StatusBar.State.IN_PROGRESS);
-
+        statusBar.setStatus("searching...");
     }
 
     @Override

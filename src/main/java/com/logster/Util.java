@@ -11,8 +11,8 @@ public class Util {
 
 
     public static void setLineColWidth(JTable table){
-        int charWidth = table.getFontMetrics(table.getFont()).charWidth('0'); // width of a single char
-        int colWidth = charWidth * 7; // 10 characters
+        int charWidth = table.getFontMetrics(table.getFont()).charWidth('m'); // width of a single char
+        int colWidth = charWidth * 10; // 10 characters
         table.getColumnModel().getColumn(0).setPreferredWidth(colWidth);
         table.getColumnModel().getColumn(0).setMinWidth(colWidth);
         table.getColumnModel().getColumn(0).setMaxWidth(colWidth);

@@ -122,7 +122,7 @@ Specify the date formats to enable the engine to recognize dates in text lines. 
 
 First line: A regular expression to match the date string. The regex must include at least one capturing group () around the date value.
 
-Second line: The corresponding date format in Java’s SimpleDateFormat.
+Second line: The corresponding date format in Java’s [DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html)
 
 Use the test UI to ensure that your regex and date format correctly match your sample values.
 
@@ -145,7 +145,7 @@ Date value parsed from string – Shows the final date value after converting th
 
 Enter regular expression to highlight text – Input the regex (Java-style) used to match parts of the text.
 
-Enter date format to parse string – Input the date format in Java’s SimpleDateFormat to parse the matched string.
+Enter date format to parse string – Input the date format in Java’s [DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) to parse the matched string.
 
 ### File viewer
 ![Logster_File_Viewer.png](wiki/images/Logster_File_Viewer.png)

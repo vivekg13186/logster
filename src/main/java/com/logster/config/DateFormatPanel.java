@@ -17,7 +17,7 @@ import static com.logster.ui.Icons.dateIcon;
 
 public class DateFormatPanel extends ClosableTabPanel {
     final JTextArea textArea =new JTextArea();
-    final Preferences preferences  = Preferences.userNodeForPackage(DateFormatPattern.class);
+
     public DateFormatPanel(JTabbedPane tabbedPane ) {
         super(tabbedPane, "Date formats", dateIcon);
         setLayout(new BorderLayout());
@@ -43,7 +43,7 @@ public class DateFormatPanel extends ClosableTabPanel {
             }
         });
 
-        validateAndUpdate(preferences.get("DateFormatPattern",""));
+
 
     }
 
@@ -69,6 +69,6 @@ public class DateFormatPanel extends ClosableTabPanel {
             stringBuilder.append(d.dateFormat().toString()).append("\n");
         }
         textArea.setText(stringBuilder.toString());
-        preferences.get("DateFormatPattern",stringBuilder.toString());
+
     }
 }

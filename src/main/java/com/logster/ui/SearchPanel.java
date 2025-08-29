@@ -47,7 +47,7 @@ public class SearchPanel extends IconTabPanel {
         add(new JScrollPane(resultTable), BorderLayout.CENTER);
         add(topPanel, BorderLayout.NORTH);
         LocalDateTime date = LocalDateTime.now();
-        fromDateField.setDate(date.plusMinutes(10));
+        fromDateField.setDate(date.minusMinutes(10));
         toDateField.setDate(date);
         resultTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {

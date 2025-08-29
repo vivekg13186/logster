@@ -52,28 +52,33 @@ public class SimpleFileSearch {
 
         listener.onSearchStarted();
 
-        Files.walkFileTree(Path.of(filePath), new SimpleFileVisitor<>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                batch.add(file);
-                if (batch.size() == 1000) {
-                    processBatch(new ArrayList<>(batch),controller,pattern,dateDetection,startTime,endTime,resultCount,listener);
-                    batch.clear();
+        try {
+            Files.walkFileTree(Path.of(filePath), new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    batch.add(file);
+                    if (batch.size() == 1000) {
+                        processBatch(new ArrayList<>(batch), controller, pattern, dateDetection, startTime, endTime, resultCount, listener);
+                        batch.clear();
+                    }
+
+                    return controller.isCancelled() ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
                 }
 
-                return controller.isCancelled() ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
-            }
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+                    if (!batch.isEmpty()) {
+                        processBatch(new ArrayList<>(batch), controller, pattern, dateDetection, startTime, endTime, resultCount, listener);
+                        batch.clear();
+                    }
 
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-                if (!batch.isEmpty()) {
-                    processBatch(new ArrayList<>(batch),controller,pattern,dateDetection,startTime,endTime,resultCount,listener);
-                    batch.clear();
+                    return controller.isCancelled() ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
                 }
-
-                return controller.isCancelled() ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
-            }
-        });
+            });
+        } catch (Exception e) {
+            logger.error("error",e);
+            listener.onSearchCompleted(0);
+        }
 
 
         Instant end = Instant.now();
@@ -124,10 +129,10 @@ public class SimpleFileSearch {
                     if(lineTime!=null){
                           long diff = Util.toEpochMilli(lineTime);
                           if(diff<startTime || diff>endTime){
-                              break; //not in our time range
+                              continue; //not in our time range
                           }
                     }else{
-                        break;//not time in line
+                        continue;//not time in line
                     }
                 }
                 Matcher matcher = pattern.matcher(line);
