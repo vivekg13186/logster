@@ -19,11 +19,6 @@
   <p align="center">
     A desktop GUI application for searching and browsing log files.
     <br />
-    <a href="https://github.com/vivekg13186/logster"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/vivekg13186/logster">View Demo</a>
-    &middot;
     <a href="https://github.com/vivekg13186/logster/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     &middot;
     <a href="https://github.com/vivekg13186/logster/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
