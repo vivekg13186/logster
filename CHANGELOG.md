@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.1
+
+### Added
+- fix for date range
+- updated documentation
+- removed default values
+
+### Removed
+- user preference 
+
 
 ## v2.0
 
