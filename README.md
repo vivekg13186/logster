@@ -33,9 +33,6 @@
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
     </li>
     <li>
       <a href="#getting-started">Getting Started</a>
@@ -79,9 +76,6 @@ Logster combines speed, simplicity, and flexibility. It’s perfect for anyone w
 
 <!-- GETTING STARTED -->
 ## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
@@ -140,20 +134,16 @@ Use the test UI to ensure that your regex and date format correctly match your s
 ![Logster_Test_Utility](./wiki/images/Logster_Test_UI.png)
 
 Use this interface to test or troubleshoot your regular expressions and date formats.
-Enter input text – Provide the text that will be checked for matches.
 
+Enter input text – Provide the text that will be checked for matches.
 
 Text highlighted by regex – Shows the exact portions of text matched by your regular expression.
 
-
 Date string matched by regex – Displays the capturing group from the regex that will be used for parsing the date.
-
 
 Date value parsed from string – Shows the final date value after converting the matched string using the specified format.
 
-
 Enter regular expression to highlight text – Input the regex (Java-style) used to match parts of the text.
-
 
 Enter date format to parse string – Input the date format in Java’s SimpleDateFormat to parse the matched string.
 
