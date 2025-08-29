@@ -10,14 +10,17 @@ import static com.logster.ui.Icons.previewIcon;
 
 public class FileContentViewer extends ClosableTabPanel {
 
-
-
-
     public FileContentViewer(JTabbedPane tabbedPane, File file, int highlightLine) {
-        super(tabbedPane, file.getName(),previewIcon );
-        VirtualFileTableModel model = new VirtualFileTableModel(file, Math.max(highlightLine-2000,0), highlightLine+2000 );
+        super(tabbedPane, file.getName(), previewIcon);
+
+
+
+        int start = Math.max(highlightLine - 2000, 1); // never 0
+        int end = highlightLine + 2000;
+
+        VirtualFileTableModel model = new VirtualFileTableModel(file, start, end);
         JTable table = new JTable(model);
-        Util.setTableRenderer(table,new FileContentRenderer(highlightLine));
+        Util.setTableRenderer(table, new FileContentRenderer(highlightLine));
 
         table.setTableHeader(null);
         Util.setLineColWidth(table);
@@ -26,7 +29,7 @@ public class FileContentViewer extends ClosableTabPanel {
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.setCellSelectionEnabled(true);
 
-        // Copy functionality
+        // Copy action
         KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
         table.getInputMap().put(copy, "copy");
         table.getActionMap().put("copy", new AbstractAction() {
@@ -49,14 +52,17 @@ public class FileContentViewer extends ClosableTabPanel {
         add(fileLabel,BorderLayout.NORTH);
         add(scrollPane,BorderLayout.CENTER);
         setBorder(BorderFactory.createEmptyBorder(10,10,0,10));
+
         SwingUtilities.invokeLater(() -> {
-            int rowIndex =  (highlightLine - model.startLineNumber);
+            int rowIndex = highlightLine - model.startLineNumber; // model.startLineNumber is 1-based
+            if (rowIndex < 0) rowIndex = 0;
+            if (model.getRowCount() == 0) return;
+            if (rowIndex >= model.getRowCount()) rowIndex = model.getRowCount() - 1;
+
             int viewRow = table.convertRowIndexToView(rowIndex);
             table.scrollRectToVisible(table.getCellRect(viewRow, 0, true));
             table.setRowSelectionInterval(viewRow, viewRow);
             table.requestFocusInWindow();
         });
     }
-
-
 }

@@ -37,7 +37,7 @@ public class SimpleFileSearch {
 
 
 
-    public void search(String filePath, String queryStr, SearchProgressListener listener, SearchController controller, DateDetection dateDetection, long startTime, long endTime) throws Exception {
+    public void search(String filePath, String queryStr, SearchProgressListener listener, SearchController controller, DateDetection dateDetection, long startTime, long endTime) {
         logger.info("file {} query {}",filePath,queryStr);
         List<Path> batch = new ArrayList<>(1000);
         long timeTakenInSeconds;
@@ -129,9 +129,11 @@ public class SimpleFileSearch {
                     if(lineTime!=null){
                           long diff = Util.toEpochMilli(lineTime);
                           if(diff<startTime || diff>endTime){
+                              lineNum++;
                               continue; //not in our time range
                           }
                     }else{
+                        lineNum++;
                         continue;//not time in line
                     }
                 }

@@ -8,7 +8,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.time.format.DateTimeFormatter;
 
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 
 import static com.logster.Util.padding;

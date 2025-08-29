@@ -10,14 +10,16 @@ public class VirtualFileTableModel extends AbstractTableModel {
 
     private final String[] columnNames = {"lno", "content"};
     private final File file;
-    public final int startLineNumber;
-    public final int endLineNumber;
+    public final int startLineNumber; // 1-based inclusive
+    public final int endLineNumber;   // 1-based inclusive
     private final List<String> lines = new ArrayList<>();
 
-    public VirtualFileTableModel(File file, int startLineNumber, int endLineNumber) {
+    public VirtualFileTableModel(File file, int requestedStartLineNumber, int requestedEndLineNumber) {
         this.file = file;
-        this.startLineNumber = startLineNumber;
-        this.endLineNumber = endLineNumber;
+        // enforce 1-based inclusive start
+        this.startLineNumber = Math.max(1, requestedStartLineNumber);
+        // ensure end >= start
+        this.endLineNumber = Math.max(this.startLineNumber, requestedEndLineNumber);
         loadLines();
     }
 
@@ -33,9 +35,8 @@ public class VirtualFileTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        int lineNumber = startLineNumber + rowIndex;
+        int lineNumber = startLineNumber + rowIndex; // 1-based file line number
         String lineContent = lines.get(rowIndex);
-
         return columnIndex == 0 ? lineNumber : lineContent;
     }
 
@@ -46,23 +47,22 @@ public class VirtualFileTableModel extends AbstractTableModel {
 
     private void loadLines() {
         lines.clear();
-        try (BufferedReader br = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
             int currentLine = 1;
             String line;
             while ((line = br.readLine()) != null) {
-                if (currentLine >= startLineNumber && currentLine <= endLineNumber) {
-                    if(line.length()>500){
-                        lines.add(line.substring(0,500));
-                    }else {
+                if (currentLine >= startLineNumber) {
+                    if (currentLine > endLineNumber) break;
+                    if (line.length() > 500) {
+                        lines.add(line.substring(0, 500));
+                    } else {
                         lines.add(line);
                     }
-
                 }
-                if (currentLine > endLineNumber) break;
                 currentLine++;
             }
         } catch (IOException e) {
-            lines.add("[Error reading file]");
+            lines.add("[Error reading file: " + e.getMessage() + "]");
         }
     }
 }
