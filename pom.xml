@@ -6,7 +6,7 @@
 
     <groupId>logster</groupId>
     <artifactId>logster</artifactId>
-    <version>2.1</version>
+    <version>2.2</version>
 
     <properties>
         <maven.compiler.source>23</maven.compiler.source>
