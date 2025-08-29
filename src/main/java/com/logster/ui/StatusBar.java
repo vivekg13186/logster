@@ -15,7 +15,7 @@ public class StatusBar extends JPanel {
     private final JLabel statusLabel = new JLabel();
 
     private final JLabel statusIconLabel = new JLabel(thumbsUpIcon);
-    private final JProgressBar progressBar = new JProgressBar();
+
     private Runnable onSearchCancel=null;
 
     public  enum State{
@@ -23,16 +23,19 @@ public class StatusBar extends JPanel {
         IN_PROGRESS,
         MAX_SEARCH_RESULT,
         SEARCH_COMPLETED
-    }
+    }       JButton stopSearchBtn = new JButton(stopIcon);
     public StatusBar(){
 
         setLayout(new BorderLayout());
-        JButton stopSearchBtn = new JButton(stopIcon);
-        add(rows(statusIconLabel,statusLabel,progressBar, stopSearchBtn),BorderLayout.CENTER);
+
+
+        add(rows(statusIconLabel,stopSearchBtn,statusLabel  ),BorderLayout.CENTER);
         padding(this,5);
         stopSearchBtn.addActionListener((_)->{
             if(onSearchCancel!=null)onSearchCancel.run();
         });
+        stopSearchBtn.setEnabled(false);
+        stopSearchBtn.setToolTipText("Stop search");
     }
 
     public void setStatus(String message){
@@ -40,17 +43,29 @@ public class StatusBar extends JPanel {
     }
 
     public void setState(State state){
+        stopSearchBtn.setEnabled(false);
         switch (state){
-            case IN_PROGRESS ->  statusIconLabel.setIcon(searchingIcon);
-            case SEARCH_CANCELLED -> statusIconLabel.setIcon(cancelIcon);
-            case SEARCH_COMPLETED -> statusIconLabel.setIcon(thumbsUpIcon);
-            case MAX_SEARCH_RESULT -> statusIconLabel.setIcon(limitIcon);
+            case IN_PROGRESS ->  {
+                statusIconLabel.setIcon(searchingIcon);
+                statusIconLabel.setToolTipText("searching files");
+                stopSearchBtn.setEnabled(true);
+            }
+            case SEARCH_CANCELLED -> {
+                statusIconLabel.setToolTipText("search cancelled");
+                statusIconLabel.setIcon(cancelIcon);
+            }
+            case SEARCH_COMPLETED -> {
+                statusIconLabel.setToolTipText("search completed");
+                statusIconLabel.setIcon(thumbsUpIcon);
+            }
+            case MAX_SEARCH_RESULT ->{
+                statusIconLabel.setToolTipText("search reached max result");
+                statusIconLabel.setIcon(limitIcon);
+            }
         }
     }
 
-    public void setProgress(int progress){
-        progressBar.setValue(progress);
-    }
+
 
     public void setOnSearchCancel(Runnable run){
         this.onSearchCancel= run;

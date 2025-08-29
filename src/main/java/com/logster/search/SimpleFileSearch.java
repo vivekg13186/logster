@@ -8,9 +8,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -19,10 +18,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 
-import static java.nio.file.Files.walk;
+import static com.logster.config.AppConfiguration.getMaxResult;
+
 
 public class SimpleFileSearch {
 
@@ -39,9 +38,9 @@ public class SimpleFileSearch {
 
 
     public void search(String filePath, String queryStr, SearchProgressListener listener, SearchController controller, DateDetection dateDetection, long startTime, long endTime) throws Exception {
-        logger.error("file {} query {}",filePath,queryStr);
+        logger.info("file {} query {}",filePath,queryStr);
+        List<Path> batch = new ArrayList<>(1000);
         long timeTakenInSeconds;
-
 
 
         Pattern pattern = Pattern.compile(queryStr);
@@ -50,48 +49,32 @@ public class SimpleFileSearch {
         AtomicInteger resultCount = new AtomicInteger(0);
 
 
-        int maxResults = 10000;
+
         listener.onSearchStarted();
 
-        List<Path> allPaths;
-        try (Stream<Path> stream = walk(Paths.get(filePath))) {
-            allPaths = stream .toList();
-        }
-        int batchSize = 100;
-        int allFiles = allPaths.size();
-
-        for (int i = 0; i < allPaths.size(); i += batchSize) {
-
-            if (controller.isCancelled()) break;
-
-            List<Path> batch = allPaths.subList(i, Math.min(i + batchSize, allPaths.size()));
-
-            int finalI = i;
-            batch.parallelStream().forEach(path -> {
-                if (controller.isCancelled()) {
-
-                    return;
+        Files.walkFileTree(Path.of(filePath), new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                batch.add(file);
+                if (batch.size() == 1000) {
+                    processBatch(new ArrayList<>(batch),controller,pattern,dateDetection,startTime,endTime,resultCount,listener);
+                    batch.clear();
                 }
 
-                if(!Files.isRegularFile(path)||isIgnored(path)||isBinary(path))return;
+                return controller.isCancelled() ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+            }
 
-                List<SearchResult> results = searchFile(path, pattern,dateDetection,startTime,endTime);
-                for (SearchResult r : results) {
-                    if (controller.isCancelled()){
-
-                        break;
-                    }
-                    int count = resultCount.incrementAndGet();
-                    if (count <= maxResults) {
-                        listener.onResultFound(r,allFiles, finalI);
-                    } else {
-                        controller.cancel();
-                        listener.onMaxLimit();
-                        break;
-                    }
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+                if (!batch.isEmpty()) {
+                    processBatch(new ArrayList<>(batch),controller,pattern,dateDetection,startTime,endTime,resultCount,listener);
+                    batch.clear();
                 }
-            });
-        }
+
+                return controller.isCancelled() ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+            }
+        });
+
 
         Instant end = Instant.now();
         timeTakenInSeconds = Duration.between(start, end).toSeconds();
@@ -100,7 +83,35 @@ public class SimpleFileSearch {
 
     }
 
+    private void processBatch(List<Path> batch,SearchController controller,Pattern pattern,DateDetection dateDetection,long startTime,long endTime,AtomicInteger resultCount,SearchProgressListener listener ){
+
+        batch.parallelStream().forEach(path -> {
+            if (controller.isCancelled()) {
+
+                return;
+            }
+
+            if(!Files.isRegularFile(path)||isIgnored(path)||isBinary(path))return;
+
+            List<SearchResult> results = searchFile(path, pattern,dateDetection,startTime,endTime);
+            for (SearchResult r : results) {
+                if (controller.isCancelled()){
+
+                    break;
+                }
+                int count = resultCount.incrementAndGet();
+                if (count <= getMaxResult()) {
+                    listener.onResultFound(r,1, 1);
+                } else {
+                    controller.cancel();
+                    listener.onMaxLimit();
+                    break;
+                }
+            }
+        });
+    }
     private static List<SearchResult> searchFile(Path path, Pattern pattern,DateDetection dateDetection,long startTime,long endTime) {
+
         List<SearchResult> matches = new ArrayList<>();
         int lineNum = 1;
         try (BufferedReader br = Files.newBufferedReader(path)) {
@@ -125,6 +136,10 @@ public class SimpleFileSearch {
                     do {
                         matchPositions.add(new MatchPosition(matcher.start(), matcher.end()));
                     } while (matcher.find());
+                    if(line.length()>100){
+                        line = line.substring(0,100);
+                        matchPositions.clear();
+                    }
                     matches.add(new SearchResult(path.toAbsolutePath().toString(), lineNum, line, matchPositions));
                 }
 
@@ -134,9 +149,7 @@ public class SimpleFileSearch {
         } catch (IOException ignored) {
             // Skip unreadable files
         }
-        for(SearchResult m :matches){
-            m.setLineCount(lineNum-1);
-        }
+
         return matches;
     }
 

@@ -8,7 +8,7 @@ public class SearchResult  {
     private final int lineNumber;
     private final String lineContent;
     private final List<MatchPosition> matchPositions;
-    private int lineCount;
+
 
     public SearchResult(String filePath, int lineNumber, String lineContent, List<MatchPosition> matchPositions) {
         this.filePath = filePath;
@@ -33,7 +33,5 @@ public class SearchResult  {
         return matchPositions;
     }
 
-    public void setLineCount(int lineCount) {
-        this.lineCount = lineCount;
-    }
+
 }

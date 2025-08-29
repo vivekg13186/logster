@@ -59,7 +59,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
         add(viewerTabs, BorderLayout.CENTER);
         statusBar.setOnSearchCancel(() -> {
             controller.cancel();
-            statusBar.setProgress(0);
+
             statusBar.setState(StatusBar.State.SEARCH_CANCELLED);
 
         });
@@ -107,7 +107,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
     }
 
     public static void main(String[] args) {
-        Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints");
+        AppConfiguration.loadSystemVars();
         System.setProperty("flatlaf.useWindowDecorations", "false");
         FlatIntelliJLaf.setup();
         loadFont();
@@ -119,10 +119,8 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
     public void onResultFound(SearchResult result, int noOfFiles, int processedFiles) {
         SwingUtilities.invokeLater(() -> {
             searchPanel.addSearchResult(result);
-            int y = processedFiles + 1;
-            float progress = ((float) y / (float) noOfFiles) * 100;
-            statusBar.setProgress((int) Math.floor(progress));
-            String message = String.format("%d results ,%d of %d files ,searching....", searchPanel.getRowCount(), y, noOfFiles);
+
+            String message = String.format("%d results  searching....", searchPanel.getRowCount());
             statusBar.setStatus(message);
 
         });
@@ -132,8 +130,6 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
     @Override
     public void onSearchStarted() {
         searchPanel.clearSearchResult();
-        statusBar.setStatus("collecting file information..");
-        statusBar.setProgress(0);
         statusBar.setState(StatusBar.State.IN_PROGRESS);
 
     }
@@ -141,7 +137,7 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
     @Override
     public void onSearchCompleted(long timeTakenInSeconds) {
         SwingUtilities.invokeLater(() -> {
-            statusBar.setProgress(100);
+
             statusBar.setStatus(String.format("%d results in %d seconds", searchPanel.getRowCount(), timeTakenInSeconds));
             statusBar.setState(StatusBar.State.SEARCH_COMPLETED);
         });
@@ -151,7 +147,6 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
     @Override
     public void onMaxLimit() {
         statusBar.setState(StatusBar.State.MAX_SEARCH_RESULT);
-        statusBar.setStatus("Search limit reached");
     }
 
     @Override
@@ -174,10 +169,10 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
                     if (searchPanel.useDateForSearch()) {
                         long start = searchPanel.getStartTime();
                         long end = searchPanel.getEndTime();
-                        logger.error("with date");
+
                         search.search(searchLocation, searchQuery, listener, controller, DateDetection.dateDetection, start, end);
                     } else {
-                        logger.error("without date");
+
                         search.search(searchLocation, searchQuery, listener, controller, null, -1, -1);
                     }
                 }catch (Exception e){
