@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.2
+
+### Added
+- fixed line number issue
+
+
 ## v2.1
 
 ### Added
