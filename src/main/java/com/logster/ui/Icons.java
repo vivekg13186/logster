@@ -11,6 +11,7 @@ public class Icons {
     public static final FlatSVGIcon limitIcon = new FlatSVGIcon("icons/limit.svg",16,16);
     public static final FlatSVGIcon previewIcon = new FlatSVGIcon("icons/preview.svg",16,16);
     public static final FlatSVGIcon searchingIcon = new FlatSVGIcon("icons/searching.svg",16,16);
+    public static final FlatSVGIcon searchingIconMarker = new FlatSVGIcon("icons/searchMarker.svg",16,16);
     public static final FlatSVGIcon thumbsUpIcon = new FlatSVGIcon("icons/thumbsUp.svg",16,16);
     public static final FlatSVGIcon openFolderIcon = new FlatSVGIcon("icons/openFolder.svg",16,16);
     public static final FlatSVGIcon stopIcon = new FlatSVGIcon("icons/stop.svg",16,16);

@@ -20,6 +20,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 
@@ -89,7 +90,12 @@ public class Logster extends JFrame implements SearchProgressListener, SearchPan
 
 
     private void openViewer(SearchResult r) {
-        new FileContentViewer(viewerTabs, new File(r.filePath()), r.lineNumber());
+        try {
+
+            new FileContentViewer(viewerTabs, new File(r.filePath()), r.lineNumber(),1,10);
+        } catch (Exception e) {
+            logger.error("error", e);
+        }
 
     }
 

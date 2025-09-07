@@ -1,68 +1,65 @@
 package com.logster;
 
+import com.logster.ui.Icons;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.Gutter;
+import org.fife.ui.rtextarea.RTextScrollPane;
+
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
-import java.io.File;
+import java.io.*;
 
 import static com.logster.ui.Icons.previewIcon;
 
 public class FileContentViewer extends ClosableTabPanel {
 
-    public FileContentViewer(JTabbedPane tabbedPane, File file, int highlightLine) {
+    public FileContentViewer(JTabbedPane tabbedPane, File file, int highlightLine,int startOffset,int endOffset) throws IOException, BadLocationException {
         super(tabbedPane, file.getName(), previewIcon);
-
-
-
         int start = Math.max(highlightLine - 2000, 1); // never 0
         int end = highlightLine + 2000;
+        StringBuilder builder = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line;
+        int lineNumber = 0;
 
-        VirtualFileTableModel model = new VirtualFileTableModel(file, start, end);
-        JTable table = new JTable(model);
-        Util.setTableRenderer(table, new FileContentRenderer(highlightLine));
-
-        table.setTableHeader(null);
-        Util.setLineColWidth(table);
-
-        table.setAutoCreateRowSorter(false);
-        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        table.setCellSelectionEnabled(true);
-
-        // Copy action
-        KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
-        table.getInputMap().put(copy, "copy");
-        table.getActionMap().put("copy", new AbstractAction() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                int[] rows = table.getSelectedRows();
-                StringBuilder sb = new StringBuilder();
-                for (int row : rows) {
-                    int modelRow = table.convertRowIndexToModel(row);
-                    sb.append(model.getValueAt(modelRow, 1)).append("\n");
-                }
-                Toolkit.getDefaultToolkit().getSystemClipboard()
-                        .setContents(new StringSelection(sb.toString()), null);
+        while ((line = reader.readLine()) != null) {
+            lineNumber++;
+            if (lineNumber >= start && lineNumber <= end) {
+                builder.append(line).append("\n");
             }
-        });
+            if (lineNumber > end) break;
+        }
+        reader.close();
+        RSyntaxTextArea textArea = new RSyntaxTextArea();
+        textArea.setText(builder.toString());
+                textArea.setCodeFoldingEnabled(true);
+        textArea.setEditable(false);
 
-        JScrollPane scrollPane = new JScrollPane(table);
+
+
+            int offset = textArea.getLineStartOffset(highlightLine - start);
+            textArea.setCaretPosition(offset);
+            Rectangle viewRect = textArea.modelToView(offset);
+            if (viewRect != null) {
+                textArea.scrollRectToVisible(viewRect);
+            }
+
+
+        RTextScrollPane scrollPane = new RTextScrollPane(textArea);
+        Gutter gutter = scrollPane.getGutter();
+        gutter.setLineNumberingStartIndex(start);
+        gutter.setBookmarkingEnabled(true);
+        gutter.addLineTrackingIcon(highlightLine - start, Icons.searchingIconMarker);
         JLabel fileLabel = new JLabel(file.getAbsolutePath());
         fileLabel.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
         setLayout(new BorderLayout());
         add(fileLabel,BorderLayout.NORTH);
         add(scrollPane,BorderLayout.CENTER);
-        setBorder(BorderFactory.createEmptyBorder(10,10,0,10));
 
-        SwingUtilities.invokeLater(() -> {
-            int rowIndex = highlightLine - model.startLineNumber; // model.startLineNumber is 1-based
-            if (rowIndex < 0) rowIndex = 0;
-            if (model.getRowCount() == 0) return;
-            if (rowIndex >= model.getRowCount()) rowIndex = model.getRowCount() - 1;
-
-            int viewRow = table.convertRowIndexToView(rowIndex);
-            table.scrollRectToVisible(table.getCellRect(viewRow, 0, true));
-            table.setRowSelectionInterval(viewRow, viewRow);
-            table.requestFocusInWindow();
-        });
+     
     }
 }
